@@ -1,4 +1,4 @@
-package AIWA.McpBackend.service.aws.s3;
+package AIWA.McpBackend.service.gcp.s3;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;

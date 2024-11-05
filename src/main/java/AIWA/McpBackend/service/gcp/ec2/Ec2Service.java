@@ -1,8 +1,8 @@
-package AIWA.McpBackend.service.aws.ec2;
+package AIWA.McpBackend.service.gcp.ec2;
 
 import AIWA.McpBackend.controller.api.dto.ec2.Ec2RequestDto;
 import AIWA.McpBackend.service.terraform.TerraformService;
-import AIWA.McpBackend.service.aws.s3.S3Service;
+import AIWA.McpBackend.service.gcp.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

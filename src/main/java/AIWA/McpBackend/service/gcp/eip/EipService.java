@@ -1,6 +1,6 @@
-package AIWA.McpBackend.service.aws.eip;
+package AIWA.McpBackend.service.gcp.eip;
 
-import AIWA.McpBackend.service.aws.s3.S3Service;
+import AIWA.McpBackend.service.gcp.s3.S3Service;
 import AIWA.McpBackend.service.terraform.TerraformService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

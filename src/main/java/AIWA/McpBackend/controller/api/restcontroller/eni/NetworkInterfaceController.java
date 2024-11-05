@@ -2,7 +2,7 @@ package AIWA.McpBackend.controller.api.restcontroller.eni;
 
 import AIWA.McpBackend.controller.api.dto.eni.NetworkInterfaceDto;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.GcpResourceService;
+import AIWA.McpBackend.service.gcp.GcpResourceService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,8 +1,8 @@
-package AIWA.McpBackend.service.aws.natgateway;
+package AIWA.McpBackend.service.gcp.natgateway;
 
 import AIWA.McpBackend.controller.api.dto.natgateway.NatGatewayRequestDto;
 import AIWA.McpBackend.service.terraform.TerraformService;
-import AIWA.McpBackend.service.aws.s3.S3Service;
+import AIWA.McpBackend.service.gcp.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -3,7 +3,7 @@ package AIWA.McpBackend.controller.api.restcontroller;
 import AIWA.McpBackend.controller.api.dto.ec2.Ec2InstanceDTO;
 import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupDTO;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
-import AIWA.McpBackend.service.aws.GcpResourceService;
+import AIWA.McpBackend.service.gcp.GcpResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

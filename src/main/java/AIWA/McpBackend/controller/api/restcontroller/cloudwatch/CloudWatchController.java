@@ -2,7 +2,7 @@ package AIWA.McpBackend.controller.api.restcontroller.cloudwatch;
 
 import AIWA.McpBackend.controller.api.dto.cloudwatch.CloudWatchAlarmRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
-import AIWA.McpBackend.service.aws.cloudwatch.CloudWatchService;
+import AIWA.McpBackend.service.gcp.cloudwatch.CloudWatchService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
