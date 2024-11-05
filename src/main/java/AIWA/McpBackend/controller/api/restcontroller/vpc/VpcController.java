@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/aws/api/vpc")
+@RequestMapping("/gcp/api/vpc") // GCP용 API 경로로 변경
 @RequiredArgsConstructor
 public class VpcController {
 
@@ -63,13 +63,22 @@ public class VpcController {
         }
     }
 
+    /**
+     * VPC 정보 조회 엔드포인트
+     *
+     * @param userId 사용자 ID (요청 파라미터로 전달)
+     * @return VPC 목록 및 정보
+     */
     @GetMapping("/describe")
     public ListResult<VpcTotalResponseDto> describeVpc(@RequestParam String userId) {
-
-        // VPCs - 서브넷 및 라우팅 테이블 정보 전달
-        List<VpcTotalResponseDto> vpcs = gcpResourceService.fetchVpcs(userId);
-        return responseService.getListResult(vpcs);
+        try {
+            // VPCs - 서브넷 및 라우팅 테이블 정보 전달
+            List<VpcTotalResponseDto> vpcs = gcpResourceService.fetchVpcs(userId);
+            return responseService.getListResult(vpcs);
+        } catch (Exception e) {
+            // 예외 로그 기록
+            e.printStackTrace();
+            return responseService.getFailResult();
+        }
     }
-
-
 }
