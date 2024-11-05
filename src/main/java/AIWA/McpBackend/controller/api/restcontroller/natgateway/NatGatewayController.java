@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.natgateway.NatGatewayDto;
 import AIWA.McpBackend.controller.api.dto.natgateway.NatGatewayRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.natgateway.NatGatewayService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class NatGatewayController {
 
     private final NatGatewayService natGatewayService;
 
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     @PostMapping("/create")
@@ -57,7 +57,7 @@ public class NatGatewayController {
 
     @GetMapping("/describe")
     public ListResult<NatGatewayDto> describeNatGateway(@RequestParam String userId) {
-        List<NatGatewayDto> natGateways = awsResourceService.fetchNatGateways(userId);
+        List<NatGatewayDto> natGateways = gcpResourceService.fetchNatGateways(userId);
         return responseService.getListResult(natGateways);
     }
 }

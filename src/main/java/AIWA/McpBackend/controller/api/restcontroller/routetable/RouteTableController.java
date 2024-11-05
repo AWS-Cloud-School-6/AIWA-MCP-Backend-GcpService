@@ -6,7 +6,7 @@ import AIWA.McpBackend.controller.api.dto.routetable.RouteTableResponseDto;
 import AIWA.McpBackend.controller.api.dto.routetable.RouteTableSubnetAssociationRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.routetable.RouteTableService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class RouteTableController {
 
     private final RouteTableService routeTableService;
 
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     /**
@@ -81,7 +81,7 @@ public class RouteTableController {
 
     @GetMapping("/describe")
     public ListResult<RouteTableResponseDto> describeRouteTable(@RequestParam String userId) {
-        List<RouteTableResponseDto> routeTables = awsResourceService.fetchRouteTables(userId);
+        List<RouteTableResponseDto> routeTables = gcpResourceService.fetchRouteTables(userId);
         return responseService.getListResult(routeTables);
     }
 }

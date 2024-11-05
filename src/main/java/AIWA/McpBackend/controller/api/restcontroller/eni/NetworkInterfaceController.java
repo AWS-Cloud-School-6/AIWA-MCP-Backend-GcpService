@@ -2,7 +2,7 @@ package AIWA.McpBackend.controller.api.restcontroller.eni;
 
 import AIWA.McpBackend.controller.api.dto.eni.NetworkInterfaceDto;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,12 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NetworkInterfaceController {
 
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     @GetMapping("/describe")
     public ListResult<NetworkInterfaceDto> listNetworkInterfaces(@RequestParam String userId) {
-        List<NetworkInterfaceDto> networkInterfaces = awsResourceService.fetchNetworkInterfaces(userId);
+        List<NetworkInterfaceDto> networkInterfaces = gcpResourceService.fetchNetworkInterfaces(userId);
         return responseService.getListResult(networkInterfaces);
     }
 }

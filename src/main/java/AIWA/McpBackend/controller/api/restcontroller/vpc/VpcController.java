@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.vpc.VpcService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.List;
 public class VpcController {
 
     private final VpcService vpcService;
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     /**
@@ -67,7 +67,7 @@ public class VpcController {
     public ListResult<VpcTotalResponseDto> describeVpc(@RequestParam String userId) {
 
         // VPCs - 서브넷 및 라우팅 테이블 정보 전달
-        List<VpcTotalResponseDto> vpcs = awsResourceService.fetchVpcs(userId);
+        List<VpcTotalResponseDto> vpcs = gcpResourceService.fetchVpcs(userId);
         return responseService.getListResult(vpcs);
     }
 

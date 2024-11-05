@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.internetgateway.InternetGatewayDto;
 import AIWA.McpBackend.controller.api.dto.internetgateway.InternetGatewayRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.internetgateway.InternetGatewayService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class InternetGatewayController {
 
     private final ResponseService responseService;
 
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     @PostMapping("/create")
     public CommonResult createInternetGateway(@RequestBody InternetGatewayRequestDto igwRequest, @RequestParam String userId) {
         try {
@@ -47,7 +47,7 @@ public class InternetGatewayController {
     @GetMapping("/describe")
     public ListResult<InternetGatewayDto> describeInternetGateway(@RequestParam String userId) {
 
-        List<InternetGatewayDto> internetGateways = awsResourceService.fetchInternetGateways(userId);
+        List<InternetGatewayDto> internetGateways = gcpResourceService.fetchInternetGateways(userId);
         return responseService.getListResult(internetGateways);
     }
 }

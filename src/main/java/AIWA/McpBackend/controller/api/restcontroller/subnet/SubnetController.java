@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.subnet.SubnetService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.List;
 public class SubnetController {
 
     private final SubnetService subnetService;
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     @PostMapping("/create")
@@ -46,7 +46,7 @@ public class SubnetController {
     @GetMapping("/describe")
     public ListResult<SubnetResponseDto> describeSubnet(@RequestParam String userId) {
 
-        List<SubnetResponseDto> subnets = awsResourceService.fetchSubnets(userId);
+        List<SubnetResponseDto> subnets = gcpResourceService.fetchSubnets(userId);
         return responseService.getListResult(subnets);
     }
 }

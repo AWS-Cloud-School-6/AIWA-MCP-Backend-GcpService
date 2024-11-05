@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.eip.EipDto;
 import AIWA.McpBackend.controller.api.dto.eip.EipRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.eip.EipService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.List;
 public class EipController {
 
     private final EipService eipService;
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     /**
@@ -57,7 +57,7 @@ public class EipController {
 
     @GetMapping("/describe")
     public ListResult<EipDto> describeEip(@RequestParam String userId) {
-        List<EipDto> eips = awsResourceService.fetchElasticIps(userId);
+        List<EipDto> eips = gcpResourceService.fetchElasticIps(userId);
         return responseService.getListResult(eips);
     }
 }

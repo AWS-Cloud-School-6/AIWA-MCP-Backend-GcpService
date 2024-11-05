@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AwsResourceService {
+public class GcpResourceService {
 
     private final RestTemplate restTemplate;
 

@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.ec2.Ec2InstanceDTO;
 import AIWA.McpBackend.controller.api.dto.ec2.Ec2RequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.ec2.Ec2Service;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class Ec2Controller {
 
     private final Ec2Service ec2InstanceService;
 
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     @PostMapping("/create")
@@ -46,7 +46,7 @@ public class Ec2Controller {
 
     @GetMapping("/describe")
     public ListResult<Ec2InstanceDTO> describeEc2(@RequestParam String userId) {
-        List<Ec2InstanceDTO> ec2Instances = awsResourceService.fetchEc2Instances(userId);
+        List<Ec2InstanceDTO> ec2Instances = gcpResourceService.fetchEc2Instances(userId);
         return responseService.getListResult(ec2Instances);
     }
 }

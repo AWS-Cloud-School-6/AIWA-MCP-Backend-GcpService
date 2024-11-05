@@ -4,7 +4,7 @@ import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupDTO;
 import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.aws.AwsResourceService;
+import AIWA.McpBackend.service.aws.GcpResourceService;
 import AIWA.McpBackend.service.aws.securitygroup.SecurityGroupService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class SecurityGroupController {
 
     private final SecurityGroupService securityGroupService;
 
-    private final AwsResourceService awsResourceService;
+    private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     @PostMapping("/create")
@@ -46,7 +46,7 @@ public class SecurityGroupController {
 
     @GetMapping("/describe")
     public ListResult<SecurityGroupDTO> describeSecurityGroup(@RequestParam String userId) {
-        List<SecurityGroupDTO> securityGroups = awsResourceService.fetchSecurityGroups(userId);
+        List<SecurityGroupDTO> securityGroups = gcpResourceService.fetchSecurityGroups(userId);
         return responseService.getListResult(securityGroups);
     }
 }
