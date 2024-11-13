@@ -10,22 +10,19 @@ import java.util.Map;
 
 @Getter
 public class VpcTotalResponseDto {
-    private final String vpcId;
-    private final String cidr;
-    private final Map<String, String> tags;
-    private List<SubnetResponseDto> subnets; // 서브넷 리스트 추가
-    private List<RouteTableResponseDto> routeTables; // 라우팅 테이블 리스트 추가
+    private String vpcId;
+    private String cidr;
+    private List<String> tags;
+    private List<String> subnets;
+    private List<String> routingTables;
 
-
-    public VpcTotalResponseDto(String vpcId, String cidr, Map<String, String> tags, List<SubnetResponseDto> subnets, List<RouteTableResponseDto> routeTables) {
+    // Constructor, Getter, Setter
+    public VpcTotalResponseDto(String vpcId, String cidr, List<String> tags, List<String> subnets, List<String> routingTables) {
         this.vpcId = vpcId;
         this.cidr = cidr;
         this.tags = tags;
         this.subnets = subnets;
-        this.routeTables = routeTables;
+        this.routingTables = routingTables;
     }
 
-    public static VpcTotalResponseDto toDto(String vpcId, String cidr, Map<String, String> tags, List<SubnetResponseDto> subnets, List<RouteTableResponseDto> routeTables) {
-        return new VpcTotalResponseDto(vpcId,cidr,tags,subnets,routeTables);
-    }
 }

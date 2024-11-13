@@ -1,6 +1,6 @@
 package AIWA.McpBackend.service.terraform;
 
-import AIWA.McpBackend.service.aws.s3.S3Service;
+import AIWA.McpBackend.service.gcp.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -9,11 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.List;
 @Service
 @RequiredArgsConstructor
