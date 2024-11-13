@@ -1,6 +1,8 @@
 package AIWA.McpBackend.service.gcp;
 
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
+import AIWA.McpBackend.controller.api.dto.response.SingleResult;
+import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
 import AIWA.McpBackend.controller.api.dto.vm.VmResponseDto;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
@@ -279,6 +281,81 @@ public class GcpResourceService {
             return ResponseEntity.status(500).body(responseService.getFailResult());
         }
     }
+
+    //static ip 조회
+    public List<StaticIpDto> getStaticIpsFromGCP(String projectId) {
+        String region = "us-central1";
+
+        try {
+            GoogleCredentials credentials = getCredentials();
+
+            try (AddressesClient addressesClient = AddressesClient.create(AddressesSettings.newBuilder()
+                    .setCredentialsProvider(() -> credentials)
+                    .build())) {
+
+                AggregatedListAddressesRequest request = AggregatedListAddressesRequest.newBuilder()
+                        .setProject(projectId)
+                        .build();
+
+                List<StaticIpDto> staticIps = new ArrayList<>();
+                AddressesClient.AggregatedListPagedResponse response = addressesClient.aggregatedList(request);
+
+                for (Map.Entry<String, AddressesScopedList> entry : response.iterateAll()) {
+                    AddressesScopedList scopedList = entry.getValue();
+                    for (Address address : scopedList.getAddressesList()) {
+                        if ("RESERVED".equals(address.getStatus()) || "IN_USE".equals(address.getStatus())) {
+                            StaticIpDto staticIpInfoDTO = new StaticIpDto(
+                                    address.getName(),
+                                    address.getAddress(),
+                                    address.getAddressType().toString(),
+                                    address.getRegion().split("/")[8],
+                                    address.getStatus(),
+                                    extractLastPathSegment(address.getSubnetwork()),
+                                    extractLastPathSegment(address.getNetwork()),
+                                    extractFirstUserResourceName(address)  // 연결된 리소스 이름 추출
+                            );
+                            staticIps.add(staticIpInfoDTO);
+                        }
+                    }
+                }
+
+                return staticIps;
+
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    /**
+     * 주소가 할당된 첫 번째 리소스의 이름을 추출하는 메서드
+     * @param address 고정 IP 주소 객체
+     * @return 할당된 리소스의 이름, 없으면 빈 문자열
+     */
+    private String extractFirstUserResourceName(Address address) {
+        if (!address.getUsersList().isEmpty()) {
+            String userUrl = address.getUsersList().get(0);
+            return extractLastPathSegment(userUrl);  // 첫 번째 할당된 리소스 이름 추출
+        }
+        return "";  // 할당된 리소스가 없으면 빈 문자열 반환
+    }
+
+    /**
+     * URL에서 마지막 값을 추출하는 메서드
+     * @param url URL 문자열
+     * @return URL에서 마지막 부분 추출, 없으면 빈 문자열
+     */
+    private String extractLastPathSegment(String url) {
+        if (url != null && !url.isEmpty()) {
+            String[] parts = url.split("/");
+            return parts[parts.length - 1];
+        }
+        return "";
+    }
+
+
 
 //    // Subnets 가져오기
 //    public List<SubnetResponseDto> fetchSubnets(String userId) {
