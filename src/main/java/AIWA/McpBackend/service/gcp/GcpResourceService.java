@@ -2,6 +2,7 @@ package AIWA.McpBackend.service.gcp;
 
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.response.SingleResult;
+import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
 import AIWA.McpBackend.controller.api.dto.vm.VmResponseDto;
@@ -18,10 +19,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -354,6 +352,66 @@ public class GcpResourceService {
         }
         return "";
     }
+
+    //FireWallPolicy 조회
+    public ListResult<FireWallPolicyDto> getFirewallRules(String projectId) {
+        List<FireWallPolicyDto> firewallPolicies = new ArrayList<>();
+
+        try {
+            // 인증 정보를 설정
+            GoogleCredentials credentials = getCredentials();
+
+            // 인증 정보를 적용하여 FirewallsClient를 생성
+            FirewallsSettings firewallsSettings = FirewallsSettings.newBuilder()
+                    .setCredentialsProvider(() -> credentials)
+                    .build();
+
+            // FirewallsClient를 사용하여 방화벽 규칙 가져오기
+            try (FirewallsClient firewallsClient = FirewallsClient.create(firewallsSettings)) {
+                for (Firewall firewall : firewallsClient.list(projectId).iterateAll()) {
+                    // target이 빈 배열일 경우 배열에 *를 넣음
+                    List<String> target = (firewall.getTargetTagsList() == null || firewall.getTargetTagsList().isEmpty())
+                            ? Arrays.asList("*")  // 전체 대상을 의미하는 배열에 * 넣기
+                            : firewall.getTargetTagsList();  // 실제 값 처리
+
+                    // sourceRanges가 비어 있으면 배열에 *를 넣음
+                    List<String> sourceRanges = (firewall.getSourceRangesList() != null && !firewall.getSourceRangesList().isEmpty())
+                            ? firewall.getSourceRangesList()  // 실제 값 처리
+                            : Arrays.asList("*");  // 비어 있으면 배열에 * 넣기
+
+                    // protocolPorts를 적절히 처리
+                    List<String> protocolPorts = (firewall.getAllowedList() != null && !firewall.getAllowedList().isEmpty())
+                            ? firewall.getAllowedList().stream()
+                            .map(allowed -> allowed.getIPProtocol() + ":" + String.join(",", allowed.getPortsList()))
+                            .collect(Collectors.toList())  // 프로토콜과 포트를 배열로 수집
+                            : Arrays.asList("*");  // 비어 있으면 배열에 * 넣기
+
+                    // LogConfig의 enable 값을 처리: Boolean로 반환되므로 null 체크
+                    Boolean logEnabled = (firewall.getLogConfig() != null) ? firewall.getLogConfig().getEnable() : Boolean.FALSE;
+
+                    // FireWallPolicyDto로 변환
+                    FireWallPolicyDto firewallPolicy = new FireWallPolicyDto(
+                            firewall.getName(),
+                            firewall.getDirection(),
+                            target.toString(),  // 배열을 문자열로 변환하여 전달
+                            sourceRanges.toString(),  // 배열을 문자열로 변환하여 전달
+                            protocolPorts.toString(),  // 배열을 문자열로 변환하여 전달
+                            logEnabled,
+                            firewall.getPriority(),
+                            extractLastPathSegment(firewall.getNetwork())
+                    );
+
+                    firewallPolicies.add(firewallPolicy);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return responseService.getListResult(new ArrayList<>()); // 실패 시 빈 리스트 반환
+        }
+
+        return responseService.getListResult(firewallPolicies); // 성공 시 방화벽 정책 리스트 반환
+    }
+
 
 
 
