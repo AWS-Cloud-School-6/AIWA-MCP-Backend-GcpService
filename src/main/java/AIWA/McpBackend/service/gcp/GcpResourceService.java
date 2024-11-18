@@ -2,6 +2,7 @@ package AIWA.McpBackend.service.gcp;
 
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.response.SingleResult;
+import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;
 import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
@@ -9,6 +10,7 @@ import AIWA.McpBackend.controller.api.dto.vm.VmResponseDto;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
 import AIWA.McpBackend.service.response.ResponseService;
 import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.paging.Page;
 import com.google.cloud.compute.v1.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +100,31 @@ public class GcpResourceService {
         String credentialsPath = "C:\\Users\\USER\\auth.json";
         return GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
                 .createScoped("https://www.googleapis.com/auth/cloud-platform");
+    }
+    /**
+     * 주소가 할당된 첫 번째 리소스의 이름을 추출하는 메서드
+     * @param address 고정 IP 주소 객체
+     * @return 할당된 리소스의 이름, 없으면 빈 문자열
+     */
+    private String extractFirstUserResourceName(Address address) {
+        if (!address.getUsersList().isEmpty()) {
+            String userUrl = address.getUsersList().get(0);
+            return extractLastPathSegment(userUrl);  // 첫 번째 할당된 리소스 이름 추출
+        }
+        return "";  // 할당된 리소스가 없으면 빈 문자열 반환
+    }
+
+    /**
+     * URL에서 마지막 값을 추출하는 메서드
+     * @param url URL 문자열
+     * @return URL에서 마지막 부분 추출, 없으면 빈 문자열
+     */
+    private String extractLastPathSegment(String url) {
+        if (url != null && !url.isEmpty()) {
+            String[] parts = url.split("/");
+            return parts[parts.length - 1];
+        }
+        return "";
     }
 
     //vm 조회
@@ -327,31 +354,7 @@ public class GcpResourceService {
         }
     }
 
-    /**
-     * 주소가 할당된 첫 번째 리소스의 이름을 추출하는 메서드
-     * @param address 고정 IP 주소 객체
-     * @return 할당된 리소스의 이름, 없으면 빈 문자열
-     */
-    private String extractFirstUserResourceName(Address address) {
-        if (!address.getUsersList().isEmpty()) {
-            String userUrl = address.getUsersList().get(0);
-            return extractLastPathSegment(userUrl);  // 첫 번째 할당된 리소스 이름 추출
-        }
-        return "";  // 할당된 리소스가 없으면 빈 문자열 반환
-    }
 
-    /**
-     * URL에서 마지막 값을 추출하는 메서드
-     * @param url URL 문자열
-     * @return URL에서 마지막 부분 추출, 없으면 빈 문자열
-     */
-    private String extractLastPathSegment(String url) {
-        if (url != null && !url.isEmpty()) {
-            String[] parts = url.split("/");
-            return parts[parts.length - 1];
-        }
-        return "";
-    }
 
     //FireWallPolicy 조회
     public ListResult<FireWallPolicyDto> getFirewallRules(String projectId) {
@@ -410,6 +413,56 @@ public class GcpResourceService {
         }
 
         return responseService.getListResult(firewallPolicies); // 성공 시 방화벽 정책 리스트 반환
+    }
+
+    public List<RoutePolicyDto> fetchRouteTables(String projectId) {
+        List<RoutePolicyDto> routePolicies = new ArrayList<>();
+
+        try {
+            // GoogleCredentials 가져오기
+            GoogleCredentials credentials = getCredentials();
+
+            // RoutesClient 생성 시 인증 정보 설정
+            RoutesSettings routesSettings = RoutesSettings.newBuilder()
+                    .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                    .build();
+
+            try (RoutesClient routesClient = RoutesClient.create(routesSettings)) {
+                // 프로젝트 ID로 라우트 테이블 가져오기
+                RoutesClient.ListPagedResponse response = routesClient.list(projectId);
+                Page<Route> routes = response.getPage();
+
+                // 라우트를 순회하여 데이터를 처리
+                for (Route route : routes.iterateAll()) {
+                    String name = route.getName();
+                    String destinationRange = route.getDestRange();
+                    String nextHop = route.getNextHopGateway();
+                    String lastPathSegment = "";
+                    int priority = route.getPriority();
+
+                    if (nextHop != null && !nextHop.isEmpty()) {
+                        // nextHop 값이 있을 경우 마지막 경로 세그먼트 추출
+                        lastPathSegment = extractLastPathSegment(nextHop);
+                    }
+
+                    // RoutePolicyDto 객체 생성
+                    RoutePolicyDto routePolicy = new RoutePolicyDto(
+                            name,
+                            destinationRange,
+                            lastPathSegment,
+                            priority
+                    );
+
+                    routePolicies.add(routePolicy);
+                }
+            }
+        } catch (IOException e) {
+            // 오류 발생 시 로그 출력 및 RuntimeException 던지기
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch route tables: " + e.getMessage());
+        }
+
+        return routePolicies; // List<RoutePolicyDto> 반환
     }
 
 
