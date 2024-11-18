@@ -1,32 +1,29 @@
-//package AIWA.McpBackend.controller.api.restcontroller.routetable;
-//
-//import AIWA.McpBackend.controller.api.dto.routetable.RouteAddRequestDto;
-//import AIWA.McpBackend.controller.api.dto.routetable.RouteTableRequestDto;
-//import AIWA.McpBackend.controller.api.dto.routetable.RouteTableResponseDto;
-//import AIWA.McpBackend.controller.api.dto.routetable.RouteTableSubnetAssociationRequestDto;
-//import AIWA.McpBackend.controller.api.dto.response.CommonResult;
-//import AIWA.McpBackend.controller.api.dto.response.ListResult;
-//import AIWA.McpBackend.service.gcp.GcpResourceService;
+package AIWA.McpBackend.controller.api.restcontroller.routetable;
+
+import AIWA.McpBackend.controller.api.dto.routetable.*;
+import AIWA.McpBackend.controller.api.dto.response.CommonResult;
+import AIWA.McpBackend.controller.api.dto.response.ListResult;
+import AIWA.McpBackend.service.gcp.GcpResourceService;
 //import AIWA.McpBackend.service.gcp.routetable.RouteTableService;
-//import AIWA.McpBackend.service.response.ResponseService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//@RestController
-//@RequestMapping("/aws/api/route-table")
-//@RequiredArgsConstructor
-//public class RouteTableController {
-//
+import AIWA.McpBackend.service.response.ResponseService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/gcp/api/route-table")
+@RequiredArgsConstructor
+public class RouteTableController {
+
 //    private final RouteTableService routeTableService;
-//
-//    private final GcpResourceService gcpResourceService;
-//    private final ResponseService responseService;
-//
-//    /**
-//     * 라우트 테이블 생성
-//     */
+
+    private final GcpResourceService gcpResourceService;
+    private final ResponseService responseService;
+
+    /**
+     * 라우트 테이블 생성
+     */
 //    @PostMapping("/create")
 //    public CommonResult createRouteTable(@RequestBody RouteTableRequestDto routeTableRequestDto) {
 //        try {
@@ -78,10 +75,13 @@
 //            return responseService.getFailResult();
 //        }
 //    }
-//
-//    @GetMapping("/describe")
-//    public ListResult<RouteTableResponseDto> describeRouteTable(@RequestParam String userId) {
-//        List<RouteTableResponseDto> routeTables = gcpResourceService.fetchRouteTables(userId);
-//        return responseService.getListResult(routeTables);
-//    }
-//}
+
+    @GetMapping("/describe")
+    public ListResult<RoutePolicyDto> describeRouteTable(@RequestParam String projectId) {
+        // `fetchRouteTables` 메서드는 `projectId`와 `userId`를 받아 실행
+        List<RoutePolicyDto> routeTables = gcpResourceService.fetchRouteTables(projectId);
+
+        // ResponseService를 사용해 결과 반환
+        return responseService.getListResult(routeTables);
+    }
+}
