@@ -9,6 +9,7 @@ import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;
 import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
+import AIWA.McpBackend.controller.api.dto.vm.NetworkInterfaceDto;
 import AIWA.McpBackend.controller.api.dto.vm.VmResponseDto;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
 import AIWA.McpBackend.service.response.ResponseService;
@@ -159,12 +160,19 @@ public class GcpResourceService {
                             String name = instance.getName();
                             String status = instance.getStatus();
                             String zone = zoneScopedInstances.getKey().substring(zoneScopedInstances.getKey().lastIndexOf('/') + 1);
-                            String externalIp = instance.getNetworkInterfaces(0).getAccessConfigsList().isEmpty() ?
-                                    null : instance.getNetworkInterfaces(0).getAccessConfigs(0).getNatIP();
-                            String internalIp = instance.getNetworkInterfaces(0).getNetworkIP();
+
+                            // 네트워크 인터페이스 정보 추출
+                            List<NetworkInterfaceDto> networkInterfaces = new ArrayList<>();
+                            for (NetworkInterface networkInterface : instance.getNetworkInterfacesList()) {
+                                String network = networkInterface.getName();
+                                String internalIp = networkInterface.getNetworkIP();
+                                String externalIp = networkInterface.getAccessConfigsList().isEmpty() ?
+                                        null : networkInterface.getAccessConfigs(0).getNatIP();
+                                networkInterfaces.add(new NetworkInterfaceDto(network, internalIp, externalIp));
+                            }
 
                             // VmResponseDto 객체에 인스턴스 정보 추가
-                            instanceList.add(new VmResponseDto(name, status, zone, externalIp, internalIp));
+                            instanceList.add(new VmResponseDto(name, status, zone, networkInterfaces));
                         }
                     }
                 });
