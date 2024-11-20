@@ -4,7 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/AIWA.McpBackend.iml" filepath="$PROJECT_DIR$/.idea/modules/AIWA.McpBackend.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/AIWA.McpBackend.test.iml" filepath="$PROJECT_DIR$/.idea/modules/AIWA.McpBackend.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/McpBackend.iml" filepath="$PROJECT_DIR$/.idea/modules/McpBackend.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/McpBackend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/McpBackend.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/McpBackend.test.iml" filepath="$PROJECT_DIR$/.idea/modules/McpBackend.test.iml" />
     </modules>
   </component>
 </project>
