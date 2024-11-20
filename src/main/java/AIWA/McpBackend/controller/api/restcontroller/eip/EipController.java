@@ -1,4 +1,4 @@
-package AIWA.McpBackend.controller.api.restcontroller.staticip;
+package AIWA.McpBackend.controller.api.restcontroller.eip;
 
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/gcp/api/eip")
 @RequiredArgsConstructor
-public class StaticIpController {
+public class EipController {
 
 //    private final EipService eipService;
     @Autowired
