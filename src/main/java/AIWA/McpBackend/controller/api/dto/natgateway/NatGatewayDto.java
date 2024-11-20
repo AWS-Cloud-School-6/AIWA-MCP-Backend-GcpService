@@ -1,6 +1,7 @@
 package AIWA.McpBackend.controller.api.dto.natgateway;
 
-import AIWA.McpBackend.controller.api.dto.eni.NetworkInterfaceDto;
+
+import AIWA.McpBackend.controller.api.dto.vm.NetworkInterfaceDto;
 import lombok.Getter;
 
 import java.util.List;
