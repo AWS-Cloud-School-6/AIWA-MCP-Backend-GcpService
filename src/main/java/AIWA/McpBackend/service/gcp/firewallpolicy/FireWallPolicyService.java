@@ -1,4 +1,4 @@
-//package AIWA.McpBackend.service.gcp.securitygroup;
+//package AIWA.McpBackend.service.gcp.firewallpolicy;
 //
 //import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupRequestDto;
 //import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupRuleDto;
@@ -11,7 +11,7 @@
 //
 //@Service
 //@RequiredArgsConstructor
-//public class SecurityGroupService {
+//public class FireWallPolicyService {
 //
 //    private final S3Service s3Service;
 //    private final TerraformService terraformService;

@@ -1,4 +1,4 @@
-//package AIWA.McpBackend.service.gcp.internetgateway;
+//package AIWA.McpBackend.service.gcp.cloudrouter;
 //
 //import AIWA.McpBackend.controller.api.dto.internetgateway.InternetGatewayRequestDto;
 //import AIWA.McpBackend.service.terraform.TerraformService;
@@ -8,7 +8,7 @@
 //
 //@Service
 //@RequiredArgsConstructor
-//public class InternetGatewayService {
+//public class CloudRouterService {
 //
 //    private final S3Service s3Service;
 //    private final TerraformService terraformService;

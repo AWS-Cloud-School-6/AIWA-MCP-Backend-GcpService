@@ -1,4 +1,4 @@
-//package AIWA.McpBackend.service.gcp.natgateway;
+//package AIWA.McpBackend.service.gcp.cloudnat;
 //
 //import AIWA.McpBackend.controller.api.dto.natgateway.NatGatewayRequestDto;
 //import AIWA.McpBackend.service.terraform.TerraformService;
@@ -8,7 +8,7 @@
 //
 //@Service
 //@RequiredArgsConstructor
-//public class NatGatewayService {
+//public class CloudNatService {
 //
 //    private final S3Service s3Service;
 //    private final TerraformService terraformService;

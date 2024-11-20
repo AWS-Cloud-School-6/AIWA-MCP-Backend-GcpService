@@ -1,4 +1,4 @@
-//package AIWA.McpBackend.service.gcp.eip;
+//package AIWA.McpBackend.service.gcp.staticip;
 //
 //import AIWA.McpBackend.service.gcp.s3.S3Service;
 //import AIWA.McpBackend.service.terraform.TerraformService;
@@ -7,7 +7,7 @@
 //
 //@Service
 //@RequiredArgsConstructor
-//public class EipService {
+//public class StaticIpService {
 //
 //    private final S3Service s3Service;
 //    private final TerraformService terraformService;
