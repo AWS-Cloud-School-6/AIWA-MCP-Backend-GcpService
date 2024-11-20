@@ -1,5 +1,6 @@
 package AIWA.McpBackend.service.gcp;
 
+import AIWA.McpBackend.controller.api.dto.cloudnat.CloudNatDto;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.response.SingleResult;
 import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;
@@ -465,7 +466,52 @@ public class GcpResourceService {
         return routePolicies; // List<RoutePolicyDto> 반환
     }
 
+    public List<CloudNatDto> fetchCloudNatDetails(String projectId, String region) {
+        List<CloudNatDto> cloudNatDetails = new ArrayList<>();
 
+        try {
+            // GoogleCredentials 가져오기
+            GoogleCredentials credentials = getCredentials();
+
+            // RoutersClient 생성 시 인증 정보 설정
+            RoutersSettings routersSettings = RoutersSettings.newBuilder()
+                    .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                    .build();
+
+            try (RoutersClient routersClient = RoutersClient.create(routersSettings)) {
+                // 프로젝트와 리전으로 Router 목록 가져오기
+                for (Router router : routersClient.list(projectId, region).iterateAll()) {
+                    String routerName = router.getName();
+                    String network = extractLastPathSegment(router.getNetwork());
+                    String routerRegion = region; // 전달된 리전을 그대로 사용
+                    String status = "ACTIVE"; // 기본값, Router 상태 조회는 API에서 직접 확인 필요
+
+                    // NAT 정보 가져오기
+                    List<RouterNat> natList = router.getNatsList();
+                    for (RouterNat nat : natList) {
+                        String natName = nat.getName();
+                        String natType = nat.getType(); // NAT 유형 추출
+                        String cloudRouter = routerName; // NAT과 연결된 Cloud Router 이름
+
+                        // DTO 생성
+                        cloudNatDetails.add(new CloudNatDto(
+                                natName,
+                                network,
+                                routerRegion,
+                                natType,
+                                cloudRouter,
+                                status
+                        ));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch Cloud NAT details: " + e.getMessage());
+        }
+
+        return cloudNatDetails;
+    }
 
 
 //    // Subnets 가져오기
