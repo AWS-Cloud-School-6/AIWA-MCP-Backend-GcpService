@@ -2,7 +2,6 @@ package AIWA.McpBackend.service.gcp;
 
 import AIWA.McpBackend.controller.api.dto.cloudnat.CloudNatDto;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.controller.api.dto.response.SingleResult;
 import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;
 import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
@@ -98,7 +97,7 @@ public class GcpResourceService {
 
     private GoogleCredentials getCredentials() throws IOException {
         // JSON 키 파일 경로 설정
-        String credentialsPath = "C:\\Users\\USER\\auth.json";
+        String credentialsPath = "/Users/hwanghyosung/Downloads/auth.json";
         return GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
                 .createScoped("https://www.googleapis.com/auth/cloud-platform");
     }
@@ -172,7 +171,7 @@ public class GcpResourceService {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(responseService.getFailResult());
+            return ResponseEntity.status(500).body(responseService.getFailResult("VPC creation failed: " + e.getMessage()));
         }
     }
 
@@ -304,7 +303,7 @@ public class GcpResourceService {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(responseService.getFailResult());
+            return ResponseEntity.status(500).body(responseService.getFailResult("VPC creation failed: " + e.getMessage()));
         }
     }
 
