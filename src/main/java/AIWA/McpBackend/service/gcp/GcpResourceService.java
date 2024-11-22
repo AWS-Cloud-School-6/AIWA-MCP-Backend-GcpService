@@ -101,7 +101,7 @@ public class GcpResourceService {
 
     private GoogleCredentials getCredentials() throws IOException {
         // JSON 키 파일 경로 설정
-        String credentialsPath = "C:\\Users\\USER\\auth.json";
+        String credentialsPath = "/Users/hwanghyosung/Downloads/auth.json";
         return GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
                 .createScoped("https://www.googleapis.com/auth/cloud-platform");
     }
@@ -182,7 +182,7 @@ public class GcpResourceService {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(responseService.getFailResult());
+            return ResponseEntity.status(500).body(responseService.getFailResult("VPC creation failed: " + e.getMessage()));
         }
     }
 
@@ -314,7 +314,7 @@ public class GcpResourceService {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(responseService.getFailResult());
+            return ResponseEntity.status(500).body(responseService.getFailResult("VPC creation failed: " + e.getMessage()));
         }
     }
 

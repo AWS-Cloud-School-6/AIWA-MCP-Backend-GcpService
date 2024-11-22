@@ -56,7 +56,7 @@ public class ResponseService { //결과 모델에 데이터를 넣어주는 서�
     /**
      * 실패 결과만 처리하는 메소드
      */
-    public CommonResult getFailResult(){
+    public CommonResult getFailResult(String s){
         CommonResult result= new CommonResult();
         result.setSuccess(false);
         result.setCode(CommonResponse.FAIL.getCode());
