@@ -1,10 +1,11 @@
 package AIWA.McpBackend.controller.api.restcontroller.routetable;
 
-import AIWA.McpBackend.controller.api.dto.routetable.*;
+import AIWA.McpBackend.controller.api.dto.routetable.RouteTableRequestDto;
+import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;  // 추가
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
-import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.service.gcp.GcpResourceService;
-//import AIWA.McpBackend.service.gcp.routetable.RouteTableService;
+import AIWA.McpBackend.service.gcp.routetable.RouteTableService;
+import AIWA.McpBackend.service.gcp.routetable.RouteTableService; // 추가
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,76 +13,72 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/gcp/api/route-table")
+@RequestMapping("/gcp/api/routetable")
 @RequiredArgsConstructor
 public class RouteTableController {
 
-//    private final RouteTableService routeTableService;
+    private final RouteTableService routeTableService;
 
     private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
     /**
-     * 라우트 테이블 생성
+     * RouteTable 생성 엔드포인트
+     *
+     * @param routeRequest RouteTable 생성 요청 DTO
+     * @param userId      사용자 ID
+     * @return 생성 성공 메시지 또는 오류 메시지
      */
-//    @PostMapping("/create")
-//    public CommonResult createRouteTable(@RequestBody RouteTableRequestDto routeTableRequestDto) {
-//        try {
-//            routeTableService.createRouteTable(
-//                    routeTableRequestDto.getRouteTableName(),
-//                    routeTableRequestDto.getVpcName(),
-//                    routeTableRequestDto.getUserId()
-//            );
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//    /**
-//     * 라우트 테이블에 게이트웨이 또는 엔드포인트로 라우트 추가
-//     */
-//    @PostMapping("/add-route")
-//    public CommonResult addRoute(@RequestBody RouteAddRequestDto routeAddRequestDto) {
-//        try {
-//            routeTableService.addRoute(
-//                    routeAddRequestDto.getRouteTableName(),
-//                    routeAddRequestDto.getDestinationCidr(),
-//                    routeAddRequestDto.getGatewayType(),
-//                    routeAddRequestDto.getGatewayId(),
-//                    routeAddRequestDto.getUserId()
-//            );
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//
-//    /**
-//     * 라우트 테이블을 서브넷과 연결
-//     */
-//    @PostMapping("/associate-subnet")
-//    public CommonResult associateRouteTableWithSubnet(@RequestBody RouteTableSubnetAssociationRequestDto requestDto) {
-//        try {
-//            routeTableService.associateRouteTableWithSubnet(
-//                    requestDto.getRouteTableName(),
-//                    requestDto.getSubnetName(),
-//                    requestDto.getUserId()
-//            );
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
+    @PostMapping("/create")
+    public CommonResult createRouteTable(
+            @RequestBody RouteTableRequestDto routeRequest,
+            @RequestParam String userId) {
+        try {
+            // RouteTableService에서 직접 호출하여 라우트 테이블 생성
+            routeTableService.createRouteTable(routeRequest, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("RouteTable creation failed: " + e.getMessage());
+        }
+    }
 
+    /**
+     * RouteTable 삭제 엔드포인트
+     *
+     * @param routeName RouteTable 이름 (요청 파라미터로 전달)
+     * @param userId   사용자 ID
+     * @return 삭제 성공 메시지 또는 오류 메시지
+     */
+    @DeleteMapping("/delete")
+    public CommonResult deleteRouteTable(
+            @RequestParam String routeName,
+            @RequestParam String userId) {
+        try {
+            // RouteTableService에서 직접 호출하여 라우트 테이블 삭제
+            routeTableService.deleteRouteTable(routeName, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("RouteTable deletion failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * RouteTable 조회 엔드포인트
+     *
+     * @param projectId GCP 프로젝트 ID
+     * @return 조회된 라우트 테이블 목록
+     */
     @GetMapping("/describe")
-    public ListResult<RoutePolicyDto> describeRouteTable(@RequestParam String projectId) {
-        // `fetchRouteTables` 메서드는 `projectId`와 `userId`를 받아 실행
-        List<RoutePolicyDto> routeTables = gcpResourceService.fetchRouteTables(projectId);
-
-        // ResponseService를 사용해 결과 반환
-        return responseService.getListResult(routeTables);
+    public CommonResult fetchRouteTables(@RequestParam String projectId) {
+        try {
+            // GCP에서 라우트 테이블을 조회
+            List<RoutePolicyDto> routePolicies = gcpResourceService.fetchRouteTables(projectId);
+            return responseService.getListResult(routePolicies);  // 조회된 라우트 테이블 리스트 반환
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("RouteTable fetch failed: " + e.getMessage());
+        }
     }
 }
