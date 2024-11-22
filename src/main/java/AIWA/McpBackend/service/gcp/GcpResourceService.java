@@ -1,11 +1,15 @@
 package AIWA.McpBackend.service.gcp;
 
+import AIWA.McpBackend.controller.api.dto.cloudrouter.CloudRouterDto;
 import AIWA.McpBackend.controller.api.dto.cloudnat.CloudNatDto;
+import AIWA.McpBackend.controller.api.dto.cloudrouter.LogConfigDto;
+import AIWA.McpBackend.controller.api.dto.cloudrouter.RouterNatDto;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;
 import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
+import AIWA.McpBackend.controller.api.dto.vm.NetworkInterfaceDto;
 import AIWA.McpBackend.controller.api.dto.vm.VmResponseDto;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
 import AIWA.McpBackend.service.response.ResponseService;
@@ -156,12 +160,19 @@ public class GcpResourceService {
                             String name = instance.getName();
                             String status = instance.getStatus();
                             String zone = zoneScopedInstances.getKey().substring(zoneScopedInstances.getKey().lastIndexOf('/') + 1);
-                            String externalIp = instance.getNetworkInterfaces(0).getAccessConfigsList().isEmpty() ?
-                                    null : instance.getNetworkInterfaces(0).getAccessConfigs(0).getNatIP();
-                            String internalIp = instance.getNetworkInterfaces(0).getNetworkIP();
+
+                            // 네트워크 인터페이스 정보 추출
+                            List<NetworkInterfaceDto> networkInterfaces = new ArrayList<>();
+                            for (NetworkInterface networkInterface : instance.getNetworkInterfacesList()) {
+                                String network = networkInterface.getName();
+                                String internalIp = networkInterface.getNetworkIP();
+                                String externalIp = networkInterface.getAccessConfigsList().isEmpty() ?
+                                        null : networkInterface.getAccessConfigs(0).getNatIP();
+                                networkInterfaces.add(new NetworkInterfaceDto(network, internalIp, externalIp));
+                            }
 
                             // VmResponseDto 객체에 인스턴스 정보 추가
-                            instanceList.add(new VmResponseDto(name, status, zone, externalIp, internalIp));
+                            instanceList.add(new VmResponseDto(name, status, zone, networkInterfaces));
                         }
                     }
                 });
@@ -510,6 +521,96 @@ public class GcpResourceService {
         }
 
         return cloudNatDetails;
+    }
+
+    public List<CloudRouterDto> fetchCloudRouterInfo(String projectId, String region) {
+        List<CloudRouterDto> cloudRouterDtos = new ArrayList<>();
+
+        try {
+            // GoogleCredentials 가져오기
+            GoogleCredentials credentials = getCredentials();
+
+            // RoutersClient 생성 시 인증 정보 설정
+            RoutersSettings routersSettings = RoutersSettings.newBuilder()
+                    .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                    .build();
+
+            try (RoutersClient routersClient = RoutersClient.create(routersSettings)) {
+                // 프로젝트와 리전으로 Router 목록 가져오기
+                ListRoutersRequest listRoutersRequest = ListRoutersRequest.newBuilder()
+                        .setProject(projectId)
+                        .setRegion(region)
+                        .build();
+
+                // Router 목록 순회
+                for (Router router : routersClient.list(listRoutersRequest).iterateAll()) {
+                    String routerName = router.getName();
+                    String network = extractLastPathSegment(router.getNetwork());
+                    String routerRegion = region; // 전달된 리전을 그대로 사용
+                    boolean encryptedInterconnectRouter = router.getEncryptedInterconnectRouter();
+                    String googleAsn = null; // Google ASN 정보가 없으므로 기본값 null
+                    String interconnectVpnGateway = ""; // 기본값
+                    String connection = ""; // 기본값
+                    String bgpSession = ""; // 기본값
+
+                    // NAT 정보가 있으면 NAT 정보에서 추출
+                    List<RouterNatDto> routerNatDtos = new ArrayList<>();
+                    List<RouterNat> natList = router.getNatsList();
+                    for (RouterNat nat : natList) {
+                        String natName = nat.getName();
+                        String natType = nat.getType(); // NAT 유형 추출
+                        String sourceSubnetworkIpRangesToNat = nat.getSourceSubnetworkIpRangesToNat();
+                        boolean enableEndpointIndependentMapping = nat.getEnableEndpointIndependentMapping();
+                        String autoNetworkTier = nat.getAutoNetworkTier();
+                        LogConfigDto logConfig = new LogConfigDto(nat.getLogConfig().getEnable(), nat.getLogConfig().getFilter());
+                        String natIpAllocateOption = nat.getNatIpAllocateOption();
+                        List<String> endpointTypes = nat.getEndpointTypesList();
+                        boolean enableDynamicPortAllocation = nat.getEnableDynamicPortAllocation();
+
+                        // NAT 정보를 RouterNatDto로 변환하여 리스트에 추가
+                        routerNatDtos.add(new RouterNatDto(
+                                natName,
+                                natType,
+                                sourceSubnetworkIpRangesToNat,
+                                enableEndpointIndependentMapping,
+                                autoNetworkTier,
+                                logConfig,
+                                natIpAllocateOption,
+                                endpointTypes,
+                                enableDynamicPortAllocation
+                        ));
+
+                        // NAT 관련 정보로 interconnectVpnGateway, connection 값 설정
+                        interconnectVpnGateway = natIpAllocateOption != null ? natIpAllocateOption : "";
+                        connection = endpointTypes.isEmpty() ? "" : String.join(", ", endpointTypes);
+                        if (interconnectVpnGateway == null || interconnectVpnGateway.isEmpty() || "AUTO_ONLY".equals(interconnectVpnGateway)) {
+                            interconnectVpnGateway = "";
+                        }
+                        if (connection == null || connection.isEmpty() || "ENDPOINT_TYPE_VM".equals(connection)) {
+                            connection = "";
+                        }
+                    }
+
+                    // CloudRouterDto 생성
+                    cloudRouterDtos.add(new CloudRouterDto(
+                            routerName,
+                            network,
+                            routerRegion,
+                            encryptedInterconnectRouter ? "true" : "false", // 암호화 여부 표시
+                            googleAsn,
+                            interconnectVpnGateway,
+                            connection,
+                            bgpSession, // BGP 세션 정보는 없으므로 N/A
+                            routerNatDtos // NAT 리스트 추가
+                    ));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch Cloud Router details: " + e.getMessage());
+        }
+
+        return cloudRouterDtos;
     }
 
 

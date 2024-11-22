@@ -1,9 +1,6 @@
-package AIWA.McpBackend.controller.api.restcontroller.natgateway;
+package AIWA.McpBackend.controller.api.restcontroller.cloudnat;
 
 import AIWA.McpBackend.controller.api.dto.cloudnat.CloudNatDto;
-import AIWA.McpBackend.controller.api.dto.natgateway.NatGatewayDto;
-import AIWA.McpBackend.controller.api.dto.natgateway.NatGatewayRequestDto;
-import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.service.gcp.GcpResourceService;
 //import AIWA.McpBackend.service.gcp.natgateway.NatGatewayService;
@@ -16,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/gcp/api/cloud-nat")
 @RequiredArgsConstructor
-public class NatGatewayController {
+public class CloudNatController {
 
 //    private final NatGatewayService natGatewayService;
 
