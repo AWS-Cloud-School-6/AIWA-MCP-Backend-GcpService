@@ -1,9 +1,12 @@
 package AIWA.McpBackend.controller.api.restcontroller.cloudnat;
 
 import AIWA.McpBackend.controller.api.dto.cloudnat.CloudNatDto;
+import AIWA.McpBackend.controller.api.dto.cloudnat.CloudNatRequestDto;
+import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.service.gcp.GcpResourceService;
 //import AIWA.McpBackend.service.gcp.natgateway.NatGatewayService;
+import AIWA.McpBackend.service.gcp.cloudnat.CloudNatService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,43 +18,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CloudNatController {
 
-//    private final NatGatewayService natGatewayService;
+    private final CloudNatService cloudNatService;
 
     private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
-//    @PostMapping("/create")
-//    public CommonResult createNatGateway(@RequestBody NatGatewayRequestDto natGatewayRequest, @RequestParam String userId) {
-//        try {
-//            natGatewayService.createNatGateway(natGatewayRequest, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//
-//    @DeleteMapping("/delete")
-//    public CommonResult deleteNatGateway(@RequestParam String natGatewayName, @RequestParam String userId) {
-//        try {
-//            natGatewayService.deleteNatGateway(natGatewayName, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//
-//    @PostMapping("/add-route")
-//    public CommonResult addRouteToNatGateway(@RequestParam String routeTableName, @RequestParam String natGatewayName, @RequestParam String cidrBlock, @RequestParam String userId) {
-//        try {
-//            natGatewayService.addRouteToNatGateway(routeTableName, natGatewayName, cidrBlock, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
+    @PostMapping("/create")
+    public CommonResult createNatGateway(@RequestBody CloudNatRequestDto cloudNatRequest, @RequestParam String userId) {
+        try {
+            cloudNatService.createCloudNat(cloudNatRequest, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("CloudNat creation failed: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public CommonResult deleteCloudNat(@RequestParam String natGatewayName, @RequestParam String userId) {
+        try {
+            cloudNatService.deleteCloudNat(natGatewayName, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("CloudNat creation failed: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/describe")
     public ListResult<CloudNatDto> describeNatGateway(@RequestParam String projectId, @RequestParam String region) {
