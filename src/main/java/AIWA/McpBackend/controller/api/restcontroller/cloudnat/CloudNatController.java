@@ -46,8 +46,10 @@ public class CloudNatController {
     }
 
     @GetMapping("/describe")
-    public ListResult<CloudNatDto> describeNatGateway(@RequestParam String projectId, @RequestParam String region) {
-        List<CloudNatDto> cloudNatDetails = gcpResourceService.fetchCloudNatDetails(projectId, region);
+    public ListResult<CloudNatDto> describeNatGateway(@RequestParam String projectId,
+                                                      @RequestParam String region,
+                                                      @RequestParam String userId) {
+        List<CloudNatDto> cloudNatDetails = gcpResourceService.fetchCloudNatDetails(projectId, region, userId);
         return responseService.getListResult(cloudNatDetails);
     }
 }

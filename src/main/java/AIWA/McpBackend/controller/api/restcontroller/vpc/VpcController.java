@@ -67,9 +67,9 @@ public class VpcController {
      * @return GCP 프로젝트에서 VPC 목록 및 상세 정보 반환
      */
     @GetMapping("/describe")
-    public ResponseEntity<?> listVpcs(@RequestParam String projectId) {
+    public ResponseEntity<?> listVpcs(@RequestParam String projectId, @RequestParam String userId) {
         try {
-            return gcpResourceService.listVpcsWithDetails(projectId); // List VPCs with the projectId
+            return gcpResourceService.listVpcsWithDetails(projectId, userId); // List VPCs with the projectId
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Failed to retrieve VPC details");

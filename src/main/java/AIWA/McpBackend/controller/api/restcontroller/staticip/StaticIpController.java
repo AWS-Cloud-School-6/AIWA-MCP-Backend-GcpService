@@ -73,10 +73,11 @@ public class StaticIpController {
      */
     @GetMapping("/describe")
     public ListResult<StaticIpDto> getStaticIps(
-            @RequestParam String projectId) {
+            @RequestParam String projectId,
+            @RequestParam String userId) {
         try {
             // GCP에서 Static IP 목록 조회
-            List<StaticIpDto> staticIps = gcpResourceService.getStaticIpsFromGCP(projectId);
+            List<StaticIpDto> staticIps = gcpResourceService.getStaticIpsFromGCP(projectId, userId);
 
             // ListResult 형태로 반환
             return responseService.getListResult(staticIps);

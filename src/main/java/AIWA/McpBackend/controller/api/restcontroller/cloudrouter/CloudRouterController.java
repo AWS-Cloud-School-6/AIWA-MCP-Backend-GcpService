@@ -45,9 +45,11 @@ public class CloudRouterController {
     }
 
     @GetMapping("/describe")
-    public ListResult<CloudRouterDto> describeCloudRouter(@RequestParam String projectId, @RequestParam String region) {
+    public ListResult<CloudRouterDto> describeCloudRouter(@RequestParam String projectId,
+                                                          @RequestParam String region,
+                                                          @RequestParam String userId) {
         // GCP 리소스 서비스에서 CloudRouter 정보를 가져옴
-        List<CloudRouterDto> cloudRouters = gcpResourceService.fetchCloudRouterInfo(projectId, region);
+        List<CloudRouterDto> cloudRouters = gcpResourceService.fetchCloudRouterInfo(projectId, region, userId);
 
         // 응답 형식에 맞게 결과 반환
         return responseService.getListResult(cloudRouters);

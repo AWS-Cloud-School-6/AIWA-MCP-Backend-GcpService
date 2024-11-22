@@ -65,7 +65,7 @@ public class VmController {
 
 
     @GetMapping("/describe")
-    public ResponseEntity<?> listInstances(@RequestParam String projectId) {
-        return gcpResourceService.listInstances(projectId);
+    public ResponseEntity<?> listInstances(@RequestParam String projectId, @RequestParam String userId) {
+        return gcpResourceService.listInstances(projectId, userId);
     }
 }

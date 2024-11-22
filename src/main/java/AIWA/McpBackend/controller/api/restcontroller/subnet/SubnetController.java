@@ -67,10 +67,10 @@ public class SubnetController {
      * @return 서브넷 목록을 ListResult로 반환
      */
     @GetMapping("/describe")
-    public ListResult<SubnetResponseDto> listSubnets(@RequestParam String projectId) {
+    public ListResult<SubnetResponseDto> listSubnets(@RequestParam String projectId, @RequestParam String userId) {
         try {
             // GcpResourceService를 통해 서브넷 리스트 조회
-            return gcpResourceService.listSubnets(projectId);
+            return gcpResourceService.listSubnets(projectId, userId);
         } catch (Exception e) {
             // 예외 발생 시 실패 결과 반환
             e.printStackTrace();
