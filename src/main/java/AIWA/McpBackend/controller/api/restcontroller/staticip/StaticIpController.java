@@ -2,67 +2,88 @@ package AIWA.McpBackend.controller.api.restcontroller.staticip;
 
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
+import AIWA.McpBackend.controller.api.dto.staticip.StaticIpRequestDto;
+import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.service.gcp.GcpResourceService;
-//import AIWA.McpBackend.service.gcp.eip.EipService;
+import AIWA.McpBackend.service.gcp.staticip.StaticIpService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/gcp/api/eip")
+@RequestMapping("/gcp/api/staticip")
 @RequiredArgsConstructor
 public class StaticIpController {
 
-//    private final EipService eipService;
-    @Autowired
+    private final StaticIpService staticIpService;
+
     private final GcpResourceService gcpResourceService;
     private final ResponseService responseService;
 
-//    /**
-//     * EIP 생성 엔드포인트
-//     *
-//     * @param eipRequestDto 요청 DTO (사용자 ID, EC2 인스턴스 ID 포함)
-//     * @return 성공 또는 오류 메시지
-//     */
-//    @PostMapping("/create")
-//    public CommonResult createEip(@RequestBody EipRequestDto eipRequestDto) {
-//        try {
-//            eipService.createEip(eipRequestDto.getEipId(),eipRequestDto.getUserId());
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//
-//    /**
-//     * EIP 삭제 엔드포인트
-//     *
-//     * @param eipRequestDto 요청 DTO (사용자 ID, EIP ID 포함)
-//     * @return 성공 또는 오류 메시지
-//     */
-//    @DeleteMapping("/delete")
-//    public CommonResult deleteEip(@RequestBody EipRequestDto eipRequestDto) {
-//        try {
-//            eipService.deleteEip(eipRequestDto.getUserId(), eipRequestDto.getEipId());
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
+    /**
+     * Static IP 생성 엔드포인트
+     *
+     * @param staticIpRequest Static IP 생성 요청 DTO
+     * @param userId          사용자 ID
+     * @return 생성 성공 메시지 또는 오류 메시지
+     */
+    @PostMapping("/create")
+    public CommonResult createStaticIp(
+            @RequestBody StaticIpRequestDto staticIpRequest,
+            @RequestParam String userId) {
+        try {
+            // StaticIpService에서 직접 호출하여 Static IP 생성
+            staticIpService.createStaticIp(staticIpRequest, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("Static IP creation failed: " + e.getMessage());
+        }
+    }
 
+    /**
+     * Static IP 삭제 엔드포인트
+     *
+     * @param ipName Static IP 이름
+     * @param userId 사용자 ID
+     * @return 삭제 성공 메시지 또는 오류 메시지
+     */
+    @DeleteMapping("/delete")
+    public CommonResult deleteStaticIp(
+            @RequestParam String ipName,
+            @RequestParam String userId) {
+        try {
+            // StaticIpService에서 직접 호출하여 Static IP 삭제
+            staticIpService.deleteStaticIp(ipName, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("Static IP deletion failed: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Static IP 목록 조회 API
+     *
+     * @param projectId GCP 프로젝트 ID
+     * @return Static IP 목록을 ListResult로 반환
+     */
     @GetMapping("/describe")
     public ListResult<StaticIpDto> getStaticIps(
-            @RequestParam String projectId) {  // projectId 파라미터 받기
+            @RequestParam String projectId) {
+        try {
+            // GCP에서 Static IP 목록 조회
+            List<StaticIpDto> staticIps = gcpResourceService.getStaticIpsFromGCP(projectId);
 
-        // gcpResourceService.getStaticIpsFromGCP에서 반환된 List<StaticIpInfoDTO>를 가져옵니다.
-        List<StaticIpDto> staticIps = gcpResourceService.getStaticIpsFromGCP(projectId);
-
-        // List<StaticIpInfoDTO>를 ResponseService의 getListResult를 사용하여 감싸서 반환합니다.
-        return responseService.getListResult(staticIps);
+            // ListResult 형태로 반환
+            return responseService.getListResult(staticIps);
+        } catch (Exception e) {
+            // 예외 발생 시 실패 결과 반환
+            e.printStackTrace();
+            return responseService.getListResult(null);  // 실패 시 null 반환
+        }
     }
 }
