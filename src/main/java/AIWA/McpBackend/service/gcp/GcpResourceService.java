@@ -36,8 +36,9 @@ public class GcpResourceService {
 
     @Autowired
     private ResponseService responseService;
-    private final RestTemplate restTemplate;
+    @Autowired
     private S3Service s3Service;
+    private final RestTemplate restTemplate;
 
     private GoogleCredentials getCredentials(String userId) throws IOException {
         //credential파일 반환
