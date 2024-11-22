@@ -20,17 +20,16 @@ public class FireWallPolicyService {
      * @param userId               사용자 ID
      * @throws Exception FirewallPolicy 생성 중 발생한 예외
      */
-    public void createFirewallPolicy(FirewallPolicyRequestDto firewallPolicyRequest, String userId) throws Exception {
+    public void createFirewallPolicy(FirewallPolicyRequestDto firewallPolicyRequest, String userId, String projectId) throws Exception {
         // 1. FirewallPolicy .tf 파일 생성
         String firewallPolicyTfContent = String.format("""
                 resource "google_compute_firewall" "%s" {
                   name          = "%s"
                   network       = "projects/%s/global/networks/%s"
                   direction     = "%s"
-                  action        = "%s"
                   source_ranges = ["%s"]
                   target_tags   = ["%s"]
-                  allowed {
+                  allow {
                     protocol = "%s"
                     ports    = ["%d"]
                   }
@@ -38,10 +37,9 @@ public class FireWallPolicyService {
                 """,
                 firewallPolicyRequest.getPolicyName(),
                 firewallPolicyRequest.getPolicyName(),
-                userId,                         // 사용자 ID를 통해 프로젝트 ID 사용
+                projectId,                         // 사용자 ID를 통해 프로젝트 ID 사용
                 firewallPolicyRequest.getNetworkName(),
                 firewallPolicyRequest.getDirection(),
-                firewallPolicyRequest.getAction(),
                 firewallPolicyRequest.getSourceRange(),
                 firewallPolicyRequest.getTargetTag(),
                 firewallPolicyRequest.getProtocol(),

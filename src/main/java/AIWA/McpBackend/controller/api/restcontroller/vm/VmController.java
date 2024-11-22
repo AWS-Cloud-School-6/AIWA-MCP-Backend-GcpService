@@ -30,10 +30,11 @@ public class VmController {
     @PostMapping("/create")
     public CommonResult createVm(
             @RequestBody VmRequestDto vmRequest,
-            @RequestParam String userId) {
+            @RequestParam String userId,
+            @RequestParam String projectId) {
         try {
             // VMService에서 직접 호출하여 VM 생성
-            vmService.createVm(vmRequest, userId);
+            vmService.createVm(vmRequest, userId,projectId);
             return responseService.getSuccessResult();
         } catch (Exception e) {
             e.printStackTrace();

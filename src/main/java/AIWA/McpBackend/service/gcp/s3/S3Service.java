@@ -26,7 +26,7 @@ public class S3Service {
      * @return 파일 키 목록
      */
     public List<String> listAllFiles(String userId) {
-        String prefix = "users/" + userId + "/";
+        String prefix = "users/" + userId + "/GCP/";
         List<String> fileKeys = new ArrayList<>();
 
         ListObjectsV2Request request = ListObjectsV2Request.builder()

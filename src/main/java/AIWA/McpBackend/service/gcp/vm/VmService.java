@@ -20,34 +20,35 @@ public class VmService {
      * @param userId    사용자 ID
      * @throws Exception VM 생성 중 발생한 예외
      */
-    public void createVm(VmRequestDto vmRequest, String userId) throws Exception {
+    public void createVm(VmRequestDto vmRequest, String userId, String projectId) throws Exception {
         // 1. VM .tf 파일 생성
         String vmTfContent = String.format("""
-                resource "google_compute_instance" "%s" {
-                  name         = "%s"
-                  machine_type = "%s"
-                  zone         = "%s"
-                  network_interface {
-                    network    = "projects/%s/global/networks/%s"
-                    subnetwork = "projects/%s/regions/%s/subnetworks/%s"
-                  }
-                  boot_disk {
-                    initialize_params {
-                      image = "projects/%s/global/images/family/%s"
-                      size  = "%s"
-                      type  = "%s"
-                    }
-                  }
-                }
+                        resource "google_compute_instance" "%s" {
+                          name         = "%s"
+                          machine_type = "%s"
+                          zone         = "%s"
+                          
+                          network_interface {
+                            network    = "projects/%s/global/networks/%s"
+                            subnetwork = "projects/%s/regions/asia-northeast3/subnetworks/%s"
+                          }
+                          
+                          boot_disk {
+                            initialize_params {
+                              image = "projects/%s/global/images/family/%s"
+                              size  = "%s"
+                              type  = "%s"
+                            }
+                          }
+                        }
                 """,
                 vmRequest.getVmName(),
                 vmRequest.getVmName(),
                 vmRequest.getMachineType(),
                 vmRequest.getZone(),
-                userId,                 // 사용자 ID를 통해 프로젝트 ID 사용
+                projectId,                 // 사용자 ID를 통해 프로젝트 ID 사용
                 vmRequest.getNetworkName(),
-                userId,                 // 사용자 ID를 통해 프로젝트 ID 사용
-                vmRequest.getZone(),
+                projectId,                 // 사용자 ID를 통해 프로젝트 ID 사용
                 vmRequest.getSubnetworkName(),
                 vmRequest.getImageProject(),
                 vmRequest.getImageFamily(),

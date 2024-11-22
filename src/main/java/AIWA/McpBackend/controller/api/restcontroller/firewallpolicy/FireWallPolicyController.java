@@ -25,10 +25,11 @@ public class FireWallPolicyController {
     @PostMapping("/create")
     public CommonResult createFirewallPolicy(
             @RequestBody FirewallPolicyRequestDto firewallPolicyRequest,
-            @RequestParam String userId) {
+            @RequestParam String userId,
+            @RequestParam String projectId) {
         try {
             // FirewallPolicyService에서 직접 호출하여 FirewallPolicy 생성
-            firewallPolicyService.createFirewallPolicy(firewallPolicyRequest, userId);
+            firewallPolicyService.createFirewallPolicy(firewallPolicyRequest, userId, projectId);
             return responseService.getSuccessResult();
         } catch (Exception e) {
             e.printStackTrace();
