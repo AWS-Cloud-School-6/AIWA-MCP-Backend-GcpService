@@ -1,9 +1,11 @@
 package AIWA.McpBackend.controller.api.restcontroller.cloudrouter;
 
 import AIWA.McpBackend.controller.api.dto.cloudrouter.CloudRouterDto;
+import AIWA.McpBackend.controller.api.dto.cloudrouter.CloudRouterRequestDto;
+import AIWA.McpBackend.controller.api.dto.response.CommonResult;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.service.gcp.GcpResourceService;
-//import AIWA.McpBackend.service.gcp.internetgateway.InternetGatewayService;
+import AIWA.McpBackend.service.gcp.cloudrouter.CloudRouterService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,32 +17,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CloudRouterController {
 
-//    private final InternetGatewayService internetGatewayService;
+    private final CloudRouterService cloudRouterService;
 
     private final ResponseService responseService;
 
     private final GcpResourceService gcpResourceService;
-//    @PostMapping("/create")
-//    public CommonResult createInternetGateway(@RequestBody InternetGatewayRequestDto igwRequest, @RequestParam String userId) {
-//        try {
-//            internetGatewayService.createInternetGateway(igwRequest, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//
-//    @DeleteMapping("/delete")
-//    public CommonResult deleteInternetGateway(@RequestParam String igwName, @RequestParam String userId) {
-//        try {
-//            internetGatewayService.deleteInternetGateway(igwName, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
+    @PostMapping("/create")
+    public CommonResult createCloudRouter(@RequestBody CloudRouterRequestDto cloudRouterRequest, @RequestParam String userId) {
+        try {
+            cloudRouterService.createCloudRouter(cloudRouterRequest, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("CloudRouter creation failed: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete")
+    public CommonResult deleteCloudRouter(@RequestParam String igwName, @RequestParam String userId) {
+        try {
+            cloudRouterService.deleteCloudRouter(igwName, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("CloudRouter creation failed: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/describe")
     public ListResult<CloudRouterDto> describeCloudRouter(@RequestParam String projectId, @RequestParam String region) {
