@@ -6,7 +6,7 @@ import AIWA.McpBackend.controller.api.dto.cloudrouter.LogConfigDto;
 import AIWA.McpBackend.controller.api.dto.cloudrouter.RouterNatDto;
 import AIWA.McpBackend.controller.api.dto.response.ListResult;
 import AIWA.McpBackend.controller.api.dto.routetable.RoutePolicyDto;
-import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
+import AIWA.McpBackend.controller.api.dto.firewallpolicy.FireWallPolicyDto;
 import AIWA.McpBackend.controller.api.dto.staticip.StaticIpDto;
 import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
 import AIWA.McpBackend.controller.api.dto.vm.NetworkInterfaceDto;

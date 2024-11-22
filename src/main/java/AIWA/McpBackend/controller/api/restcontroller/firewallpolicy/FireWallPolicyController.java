@@ -1,50 +1,59 @@
 package AIWA.McpBackend.controller.api.restcontroller.firewallpolicy;
 
-import AIWA.McpBackend.controller.api.dto.securitygroup.FireWallPolicyDto;
-import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupDTO;
-import AIWA.McpBackend.controller.api.dto.response.ListResult;
-import AIWA.McpBackend.service.gcp.GcpResourceService;
-//import AIWA.McpBackend.service.gcp.securitygroup.SecurityGroupService;
+import AIWA.McpBackend.controller.api.dto.firewallpolicy.FirewallPolicyRequestDto;
+import AIWA.McpBackend.controller.api.dto.response.CommonResult;
+import AIWA.McpBackend.service.gcp.firewallpolicy.FireWallPolicyService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/gcp/api/firewall-policy")
+@RequestMapping("/gcp/api/firewallpolicy")
 @RequiredArgsConstructor
 public class FireWallPolicyController {
 
-//    private final SecurityGroupService securityGroupService;
-
-    private final GcpResourceService gcpResourceService;
+    private final FireWallPolicyService firewallPolicyService;
     private final ResponseService responseService;
 
-//    @PostMapping("/create")
-//    public CommonResult createSecurityGroup(@RequestBody SecurityGroupRequestDto securityGroupRequest, @RequestParam String userId) {
-//        try {
-//            securityGroupService.createSecurityGroup(securityGroupRequest, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
-//
-//    @DeleteMapping("/delete")
-//    public CommonResult deleteSecurityGroup(@RequestParam String securityGroupName, @RequestParam String userId) {
-//        try {
-//            securityGroupService.deleteSecurityGroup(securityGroupName, userId);
-//            return responseService.getSuccessResult();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return responseService.getFailResult();
-//        }
-//    }
+    /**
+     * GCP FirewallPolicy 생성 엔드포인트
+     *
+     * @param firewallPolicyRequest FirewallPolicy 생성 요청 DTO
+     * @param userId               사용자 ID
+     * @return 생성 성공 메시지 또는 오류 메시지
+     */
+    @PostMapping("/create")
+    public CommonResult createFirewallPolicy(
+            @RequestBody FirewallPolicyRequestDto firewallPolicyRequest,
+            @RequestParam String userId) {
+        try {
+            // FirewallPolicyService에서 직접 호출하여 FirewallPolicy 생성
+            firewallPolicyService.createFirewallPolicy(firewallPolicyRequest, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("FirewallPolicy creation failed: " + e.getMessage());
+        }
+    }
 
-    @GetMapping("/describe")
-    public ListResult<FireWallPolicyDto> getFirewallPolicies(@RequestParam String projectId) {
-        return gcpResourceService.getFirewallRules(projectId);
+    /**
+     * GCP FirewallPolicy 삭제 엔드포인트
+     *
+     * @param policyName 방화벽 정책 이름
+     * @param userId     사용자 ID
+     * @return 삭제 성공 메시지 또는 오류 메시지
+     */
+    @DeleteMapping("/delete")
+    public CommonResult deleteFirewallPolicy(
+            @RequestParam String policyName,
+            @RequestParam String userId) {
+        try {
+            // FirewallPolicyService에서 직접 호출하여 FirewallPolicy 삭제
+            firewallPolicyService.deleteFirewallPolicy(policyName, userId);
+            return responseService.getSuccessResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return responseService.getFailResult("FirewallPolicy deletion failed: " + e.getMessage());
+        }
     }
 }
