@@ -1,4 +1,4 @@
-package AIWA.McpBackend.controller.api.dto.securitygroup;
+package AIWA.McpBackend.controller.api.dto.firewallpolicy;
 
 import lombok.Getter;
 

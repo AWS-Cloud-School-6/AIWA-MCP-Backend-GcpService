@@ -1,97 +1,80 @@
-//package AIWA.McpBackend.service.gcp.firewallpolicy;
-//
-//import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupRequestDto;
-//import AIWA.McpBackend.controller.api.dto.securitygroup.SecurityGroupRuleDto;
-//import AIWA.McpBackend.service.gcp.s3.S3Service;
-//import AIWA.McpBackend.service.terraform.TerraformService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Service;
-//
-//import java.util.List;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class FireWallPolicyService {
-//
-//    private final S3Service s3Service;
-//    private final TerraformService terraformService;
-//
-//    public void createSecurityGroup(SecurityGroupRequestDto securityGroupRequest, String userId) throws Exception {
-//        // 1. Security Group 리소스 블록 생성
-//        StringBuilder sgTfContent = new StringBuilder(String.format("""
-//            resource "aws_security_group" "%s" {
-//              vpc_id = aws_vpc.%s.id
-//              tags = {
-//                Name = "%s"
-//              }
-//
-//              // 인바운드 규칙
-//            """,
-//                securityGroupRequest.getSecurityGroupName(),
-//                securityGroupRequest.getVpcName(),
-//                securityGroupRequest.getSecurityGroupName()));
-//
-//        // 2. 인바운드 규칙 추가 (보안 그룹 블록 안에 위치)
-//        appendSecurityGroupRules(sgTfContent, securityGroupRequest.getInboundRules(), "ingress");
-//
-//        // 3. 아웃바운드 규칙 추가 (보안 그룹 블록 안에 위치)
-//        appendSecurityGroupRules(sgTfContent, securityGroupRequest.getOutboundRules(), "egress");
-//
-//        // 4. Security Group 리소스 블록 닫기
-//        sgTfContent.append("}\n");
-//
-//        // 5. Security Group .tf 파일 이름 설정
-//        String sgTfFileName = String.format("security_group_%s.tf", securityGroupRequest.getSecurityGroupName());
-//
-//        // 6. S3에 Security Group .tf 파일 업로드
-//        String s3Key = "users/" + userId + "/" + sgTfFileName;
-//        s3Service.uploadFileContent(s3Key, sgTfContent.toString());
-//
-//        // 7. Terraform 실행 요청
-//        terraformService.executeTerraform(userId);
-//    }
-//
-//    /**
-//     * Security Group 규칙을 .tf 파일에 추가합니다.
-//     *
-//     * @param contentBuilder StringBuilder에 규칙을 추가
-//     * @param rules          Security Group 규칙 리스트
-//     * @param ruleType       규칙 타입 (ingress 또는 egress)
-//     */
-//    private void appendSecurityGroupRules(StringBuilder contentBuilder, List<SecurityGroupRuleDto> rules, String ruleType) {
-//        for (SecurityGroupRuleDto rule : rules) {
-//            contentBuilder.append(String.format("""
-//            %s {
-//              protocol    = "%s"
-//              from_port   = %s
-//              to_port     = %s
-//              cidr_blocks = ["%s"]
-//            }
-//            """,
-//                    ruleType,
-//                    rule.getProtocol(),
-//                    rule.getFromPort(),
-//                    rule.getToPort(),
-//                    rule.getCidrBlock()));
-//        }
-//    }
-//
-//    /**
-//     * Security Group을 삭제합니다.
-//     *
-//     * @param securityGroupName Security Group 이름
-//     * @param userId            사용자 ID
-//     * @throws Exception Security Group 삭제 중 발생한 예외
-//     */
-//    public void deleteSecurityGroup(String securityGroupName, String userId) throws Exception {
-//        // 1. 삭제하려는 Security Group .tf 파일 이름 설정
-//        String sgTfFileName = String.format("security_group_%s.tf", securityGroupName);
-//
-//        // 2. S3에서 해당 Security Group .tf 파일 삭제
-//        String s3Key = "users/" + userId + "/" + sgTfFileName;
-//        s3Service.deleteFile(s3Key);
-//
-//        // 3. Terraform 실행 요청
-//        terraformService.executeTerraform(userId);
-//    }
-//}
+package AIWA.McpBackend.service.gcp.firewallpolicy;
+
+import AIWA.McpBackend.controller.api.dto.firewallpolicy.FirewallPolicyRequestDto;
+import AIWA.McpBackend.service.gcp.s3.S3Service;
+import AIWA.McpBackend.service.terraform.TerraformService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class FireWallPolicyService {
+
+    private final S3Service s3Service;
+    private final TerraformService terraformService;
+
+    /**
+     * GCP FirewallPolicy 생성
+     *
+     * @param firewallPolicyRequest 방화벽 정책 생성 요청 DTO
+     * @param userId               사용자 ID
+     * @throws Exception FirewallPolicy 생성 중 발생한 예외
+     */
+    public void createFirewallPolicy(FirewallPolicyRequestDto firewallPolicyRequest, String userId) throws Exception {
+        // 1. FirewallPolicy .tf 파일 생성
+        String firewallPolicyTfContent = String.format("""
+                resource "google_compute_firewall" "%s" {
+                  name          = "%s"
+                  network       = "projects/%s/global/networks/%s"
+                  direction     = "%s"
+                  action        = "%s"
+                  source_ranges = ["%s"]
+                  target_tags   = ["%s"]
+                  allowed {
+                    protocol = "%s"
+                    ports    = ["%d"]
+                  }
+                }
+                """,
+                firewallPolicyRequest.getPolicyName(),
+                firewallPolicyRequest.getPolicyName(),
+                userId,                         // 사용자 ID를 통해 프로젝트 ID 사용
+                firewallPolicyRequest.getNetworkName(),
+                firewallPolicyRequest.getDirection(),
+                firewallPolicyRequest.getAction(),
+                firewallPolicyRequest.getSourceRange(),
+                firewallPolicyRequest.getTargetTag(),
+                firewallPolicyRequest.getProtocol(),
+                firewallPolicyRequest.getPort()
+        );
+
+        // 2. FirewallPolicy .tf 파일 이름 설정 (예: firewall_myPolicy.tf)
+        String firewallPolicyTfFileName = String.format("firewall_%s.tf", firewallPolicyRequest.getPolicyName());
+
+        // 3. GCS에 새로운 FirewallPolicy .tf 파일 업로드
+        String gcsKey = "users/" + userId + "/GCP/" + firewallPolicyTfFileName;
+        s3Service.uploadFileContent(gcsKey, firewallPolicyTfContent);
+
+        // 4. Terraform 실행 요청
+        terraformService.executeTerraform(userId);
+    }
+
+    /**
+     * GCP FirewallPolicy 삭제
+     *
+     * @param policyName 방화벽 정책 이름
+     * @param userId     사용자 ID
+     * @throws Exception FirewallPolicy 삭제 중 발생한 예외
+     */
+    public void deleteFirewallPolicy(String policyName, String userId) throws Exception {
+        // 1. 삭제할 FirewallPolicy .tf 파일 이름 설정 (예: firewall_myPolicy.tf)
+        String firewallPolicyTfFileName = String.format("firewall_%s.tf", policyName);
+
+        // 2. GCS에서 해당 FirewallPolicy .tf 파일 삭제
+        String gcsKey = "users/" + userId + "/GCP/" + firewallPolicyTfFileName;
+        s3Service.deleteFile(gcsKey);
+
+        // 3. Terraform 실행 요청
+        terraformService.executeTerraform(userId);
+    }
+}
