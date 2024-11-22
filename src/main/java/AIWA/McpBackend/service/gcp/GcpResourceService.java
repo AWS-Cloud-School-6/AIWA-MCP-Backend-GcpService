@@ -43,7 +43,7 @@ public class GcpResourceService {
         //credential파일 반환
         String fileName = s3Service.downloadJsonFile(userId);
         // JSON 키 파일 경로 설정
-        String credentialsPath = "~/auth.json";
+        String credentialsPath = "tmp/"+fileName;
         return GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
                 .createScoped("https://www.googleapis.com/auth/cloud-platform");
     }
