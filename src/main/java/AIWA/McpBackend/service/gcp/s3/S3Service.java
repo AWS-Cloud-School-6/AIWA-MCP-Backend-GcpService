@@ -2,6 +2,7 @@ package AIWA.McpBackend.service.gcp.s3;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
@@ -50,6 +51,51 @@ public class S3Service {
 
         return fileKeys;
     }
+
+    public String downloadJsonFile(String userId) {
+        String prefix = "users/" + userId + "/GCP/";
+        String jsonFileName = null;
+
+        ListObjectsV2Request request = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix(prefix)
+                .build();
+
+        ListObjectsV2Response response;
+        do {
+            response = s3Client.listObjectsV2(request);
+            for (S3Object object : response.contents()) {
+                String key = object.key();
+                if (key.endsWith(".json") && !key.endsWith("/")) {
+                    jsonFileName = key.substring(key.lastIndexOf("/") + 1);  // 파일 이름만 추출
+
+                    // 파일 다운로드
+                    GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(key)
+                            .build();
+                    ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest);
+
+                    // 파일 내용을 바이트 배열로 변환
+                    try {
+                        byte[] jsonFileData = s3Object.readAllBytes();
+                    } catch (IOException e) {
+                        // 예외 처리 코드
+                        e.printStackTrace();
+                    }
+
+
+                    break;
+                }
+            }
+            request = request.toBuilder()
+                    .continuationToken(response.nextContinuationToken())
+                    .build();
+        } while (response.isTruncated() && jsonFileName == null);
+
+        return jsonFileName;  // 파일 이름 반환
+    }
+
 
     /**
      * S3에서 지정된 키에 해당하는 파일을 다운로드하여 문자열로 반환합니다.

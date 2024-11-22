@@ -2,6 +2,7 @@ package AIWA.McpBackend.controller.api.restcontroller.firewallpolicy;
 
 import AIWA.McpBackend.controller.api.dto.firewallpolicy.FirewallPolicyRequestDto;
 import AIWA.McpBackend.controller.api.dto.response.CommonResult;
+import AIWA.McpBackend.service.gcp.GcpResourceService;
 import AIWA.McpBackend.service.gcp.firewallpolicy.FireWallPolicyService;
 import AIWA.McpBackend.service.response.ResponseService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/gcp/api/firewallpolicy")
 @RequiredArgsConstructor
 public class FireWallPolicyController {
+
+    private final GcpResourceService gcpResourceService;
 
     private final FireWallPolicyService firewallPolicyService;
     private final ResponseService responseService;
@@ -55,6 +58,20 @@ public class FireWallPolicyController {
         } catch (Exception e) {
             e.printStackTrace();
             return responseService.getFailResult("FirewallPolicy deletion failed: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/describe")
+    public CommonResult describeFirewallPolicy(
+            @RequestParam String projectId,
+            @RequestParam String userId
+    ){
+        try {
+            return gcpResourceService.getFirewallRules(projectId, userId);
+        } catch (Exception e) {
+            // 예외 발생 시 실패 결과 반환
+            e.printStackTrace();
+            return responseService.getListResult(null);  // 실패 시 null 반환 또는 적절한 실패 메시지 반환
         }
     }
 }

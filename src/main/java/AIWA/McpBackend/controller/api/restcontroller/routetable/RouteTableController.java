@@ -71,10 +71,10 @@ public class RouteTableController {
      * @return 조회된 라우트 테이블 목록
      */
     @GetMapping("/describe")
-    public CommonResult fetchRouteTables(@RequestParam String projectId) {
+    public CommonResult fetchRouteTables(@RequestParam String projectId, @RequestParam String userId) {
         try {
             // GCP에서 라우트 테이블을 조회
-            List<RoutePolicyDto> routePolicies = gcpResourceService.fetchRouteTables(projectId);
+            List<RoutePolicyDto> routePolicies = gcpResourceService.fetchRouteTables(projectId, userId);
             return responseService.getListResult(routePolicies);  // 조회된 라우트 테이블 리스트 반환
         } catch (Exception e) {
             e.printStackTrace();

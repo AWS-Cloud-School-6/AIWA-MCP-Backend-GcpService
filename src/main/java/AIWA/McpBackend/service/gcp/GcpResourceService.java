@@ -12,6 +12,7 @@ import AIWA.McpBackend.controller.api.dto.subnet.SubnetResponseDto;
 import AIWA.McpBackend.controller.api.dto.vm.NetworkInterfaceDto;
 import AIWA.McpBackend.controller.api.dto.vm.VmResponseDto;
 import AIWA.McpBackend.controller.api.dto.vpc.VpcTotalResponseDto;
+import AIWA.McpBackend.service.gcp.s3.S3Service;
 import AIWA.McpBackend.service.response.ResponseService;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.paging.Page;
@@ -36,72 +37,13 @@ public class GcpResourceService {
     @Autowired
     private ResponseService responseService;
     private final RestTemplate restTemplate;
-//    private final String credentialsPath = "C:\\Users\\USER\\Desktop\\AWS 수업자료\\프로젝트\\eighth-service-439605-r6-94e2daa99a67.json"; // 로컬 JSON 키 파일 경로
+    private S3Service s3Service;
 
-//    public void initializeClient(String email) {
-//        // 특정 멤버의 AWS 자격 증명 가져오기
-//        MemberCredentialDTO memberCredentialDto = getMemberCredentials(email);
-//
-//        if (memberCredentialDto == null) {
-//            throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
-//        }
-//
-//        // AWS 자격 증명 생성
-//        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(
-//                memberCredentialDto.getAccessKey(),
-//                memberCredentialDto.getSecretKey()
-//        );
-//
-//        // EC2 클라이언트 생성
-//        this.ec2Client = Ec2Client.builder()
-//                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
-//                .region(Region.of("ap-northeast-2")) // Member에서 리전 가져오기
-//                .build();
-//    }
-//
-//    private MemberCredentialDTO getMemberCredentials(String email) {
-//        String url = "http://" + "member-svc" + "/member/api/members/email?email=" + email;
-//
-//        try {
-//            // SingleResult로 응답을 받음
-//            ResponseEntity<SingleResult<MemberCredentialDTO>> response =
-//                    restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<SingleResult<MemberCredentialDTO>>() {});
-//
-//            // 응답 상태 코드와 데이터 유효성 확인
-//            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null && response.getBody().isSuccess()) {
-//                return response.getBody().getData(); // SingleResult에서 MemberCredentialDTO 추출
-//            } else {
-//                return null;
-//            }
-//        } catch (Exception e) {
-//            // 오류 처리
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-//
-//    // EC2 Instances 가져오기
-//    public List<Ec2InstanceDTO> fetchEc2Instances(String userId) {
-//        initializeClient(userId);
-//        DescribeInstancesRequest request = DescribeInstancesRequest.builder().build();
-//        DescribeInstancesResponse response = ec2Client.describeInstances(request);
-//        List<Ec2InstanceDTO> ec2Instances = new ArrayList<>();
-//
-//        response.reservations().forEach(reservation -> {
-//            reservation.instances().forEach(instance -> {
-//                String instanceState = instance.state().nameAsString();
-//                Map<String, String> tagsMap = instance.tags() == null ? Collections.emptyMap() :
-//                        instance.tags().stream().collect(Collectors.toMap(Tag::key, Tag::value));
-//                ec2Instances.add(new Ec2InstanceDTO(instance.instanceId(), instanceState, tagsMap));
-//            });
-//        });
-//
-//        return ec2Instances;
-//    }
-
-    private GoogleCredentials getCredentials() throws IOException {
+    private GoogleCredentials getCredentials(String userId) throws IOException {
+        //credential파일 반환
+        String fileName = s3Service.downloadJsonFile(userId);
         // JSON 키 파일 경로 설정
-        String credentialsPath = "/Users/hwanghyosung/Downloads/auth.json";
+        String credentialsPath = "~/auth.json";
         return GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
                 .createScoped("https://www.googleapis.com/auth/cloud-platform");
     }
@@ -132,12 +74,12 @@ public class GcpResourceService {
     }
 
     //vm 조회
-    public ResponseEntity<?> listInstances(String projectId) {
+    public ResponseEntity<?> listInstances(String projectId, String userId) {
         List<VmResponseDto> instanceList = new ArrayList<>();
 
         try {
             // JSON 키 파일 경로 설정
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             // InstancesClient 생성
             try (InstancesClient instancesClient = InstancesClient.create(InstancesSettings.newBuilder()
@@ -187,9 +129,9 @@ public class GcpResourceService {
     }
 
     //subnet 조회
-    public ListResult<SubnetResponseDto> listSubnets(String projectId) throws IOException {
+    public ListResult<SubnetResponseDto> listSubnets(String projectId, String userId) throws IOException {
         // GCP 인증 처리 (서비스 계정 키 파일을 사용하여 인증)
-        GoogleCredentials credentials = getCredentials();
+        GoogleCredentials credentials = getCredentials(userId);
 
         // 인증 정보를 SubnetworksSettings에 설정하여 SubnetworksClient 생성
         SubnetworksSettings subnetworksSettings = SubnetworksSettings.newBuilder()
@@ -234,12 +176,12 @@ public class GcpResourceService {
     }
 
     // VPC 정보와 서브넷 및 라우팅 테이블 조회
-    public ResponseEntity<?> listVpcsWithDetails(String projectId) {
+    public ResponseEntity<?> listVpcsWithDetails(String projectId, String userId) {
         List<VpcTotalResponseDto> vpcList = new ArrayList<>();
 
         try {
             // 인증 처리
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             // NetworksClient 생성
             try (NetworksClient networksClient = NetworksClient.create(NetworksSettings.newBuilder()
@@ -319,11 +261,11 @@ public class GcpResourceService {
     }
 
     //static ip 조회
-    public List<StaticIpDto> getStaticIpsFromGCP(String projectId) {
+    public List<StaticIpDto> getStaticIpsFromGCP(String projectId, String userId) {
         String region = "us-central1";
 
         try {
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             try (AddressesClient addressesClient = AddressesClient.create(AddressesSettings.newBuilder()
                     .setCredentialsProvider(() -> credentials)
@@ -368,12 +310,12 @@ public class GcpResourceService {
 
 
     //FireWallPolicy 조회
-    public ListResult<FireWallPolicyDto> getFirewallRules(String projectId) {
+    public ListResult<FireWallPolicyDto> getFirewallRules(String projectId, String userId) {
         List<FireWallPolicyDto> firewallPolicies = new ArrayList<>();
 
         try {
             // 인증 정보를 설정
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             // 인증 정보를 적용하여 FirewallsClient를 생성
             FirewallsSettings firewallsSettings = FirewallsSettings.newBuilder()
@@ -426,12 +368,12 @@ public class GcpResourceService {
         return responseService.getListResult(firewallPolicies); // 성공 시 방화벽 정책 리스트 반환
     }
 
-    public List<RoutePolicyDto> fetchRouteTables(String projectId) {
+    public List<RoutePolicyDto> fetchRouteTables(String projectId, String userId) {
         List<RoutePolicyDto> routePolicies = new ArrayList<>();
 
         try {
             // GoogleCredentials 가져오기
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             // RoutesClient 생성 시 인증 정보 설정
             RoutesSettings routesSettings = RoutesSettings.newBuilder()
@@ -476,12 +418,12 @@ public class GcpResourceService {
         return routePolicies; // List<RoutePolicyDto> 반환
     }
 
-    public List<CloudNatDto> fetchCloudNatDetails(String projectId, String region) {
+    public List<CloudNatDto> fetchCloudNatDetails(String projectId, String region, String userId) {
         List<CloudNatDto> cloudNatDetails = new ArrayList<>();
 
         try {
             // GoogleCredentials 가져오기
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             // RoutersClient 생성 시 인증 정보 설정
             RoutersSettings routersSettings = RoutersSettings.newBuilder()
@@ -523,12 +465,12 @@ public class GcpResourceService {
         return cloudNatDetails;
     }
 
-    public List<CloudRouterDto> fetchCloudRouterInfo(String projectId, String region) {
+    public List<CloudRouterDto> fetchCloudRouterInfo(String projectId, String region, String userId) {
         List<CloudRouterDto> cloudRouterDtos = new ArrayList<>();
 
         try {
             // GoogleCredentials 가져오기
-            GoogleCredentials credentials = getCredentials();
+            GoogleCredentials credentials = getCredentials(userId);
 
             // RoutersClient 생성 시 인증 정보 설정
             RoutersSettings routersSettings = RoutersSettings.newBuilder()
