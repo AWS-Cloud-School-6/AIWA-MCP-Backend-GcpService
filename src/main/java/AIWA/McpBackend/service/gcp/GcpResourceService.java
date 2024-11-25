@@ -41,15 +41,21 @@ public class GcpResourceService {
     private final RestTemplate restTemplate;
 
     private GoogleCredentials getCredentials(String userId) throws IOException {
-        //credential파일 반환
-        String fileName = s3Service.downloadJsonFile(userId);
-        // JSON 키 파일 경로 설정
-        String credentialsPath = "tmp/"+fileName;
+        // credential 파일 다운로드 후 파일 경로 반환
+        String credentialsPath = s3Service.downloadJsonFile(userId);
+        if (credentialsPath == null) {
+            throw new IOException("Failed to download the credentials file.");
+        }
+
         // 디버깅 코드로 경로 출력
         System.out.println("Credential file path: " + credentialsPath);
+
+        // GoogleCredentials 반환
         return GoogleCredentials.fromStream(new FileInputStream(credentialsPath))
                 .createScoped("https://www.googleapis.com/auth/cloud-platform");
     }
+
+
     /**
      * 주소가 할당된 첫 번째 리소스의 이름을 추출하는 메서드
      * @param address 고정 IP 주소 객체

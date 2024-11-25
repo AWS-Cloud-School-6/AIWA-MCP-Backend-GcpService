@@ -6,9 +6,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +54,12 @@ public class S3Service {
         String prefix = "users/" + userId + "/GCP/";
         String jsonFileName = null;
 
+        // tmp 디렉토리 존재 여부 확인 및 생성
+        File tmpDir = new File("tmp");
+        if (!tmpDir.exists()) {
+            tmpDir.mkdirs();  // 디렉토리 생성
+        }
+
         ListObjectsV2Request request = ListObjectsV2Request.builder()
                 .bucket(bucketName)
                 .prefix(prefix)
@@ -76,16 +80,20 @@ public class S3Service {
                             .build();
                     ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest);
 
-                    // 파일 내용을 바이트 배열로 변환
-                    try {
-                        byte[] jsonFileData = s3Object.readAllBytes();
+                    // 파일 저장 경로 지정
+                    File localFile = new File("tmp/" + jsonFileName);
+                    try (FileOutputStream outputStream = new FileOutputStream(localFile)) {
+                        byte[] buffer = new byte[4096];
+                        int length;
+                        while ((length = s3Object.read(buffer)) > 0) {
+                            outputStream.write(buffer, 0, length);
+                        }
                     } catch (IOException e) {
-                        // 예외 처리 코드
                         e.printStackTrace();
+                        return null;  // 오류 처리
                     }
 
-
-                    break;
+                    return localFile.getAbsolutePath();  // 파일 경로 반환
                 }
             }
             request = request.toBuilder()
@@ -93,8 +101,9 @@ public class S3Service {
                     .build();
         } while (response.isTruncated() && jsonFileName == null);
 
-        return jsonFileName;  // 파일 이름 반환
+        return null;  // 파일을 찾을 수 없을 때
     }
+
 
 
     /**
