@@ -185,6 +185,7 @@ public class GcpResourceService {
     }
 
     // VPC 정보와 서브넷 및 라우팅 테이블 조회
+    // VPC 정보와 서브넷 및 라우팅 테이블 조회
     public ResponseEntity<?> listVpcsWithDetails(String projectId, String userId) {
         List<VpcTotalResponseDto> vpcList = new ArrayList<>();
 
@@ -207,16 +208,15 @@ public class GcpResourceService {
 
                 // 페이징된 네트워크 목록을 순회
                 for (Network network : response.iterateAll()) {
-                    // VPC ID, CIDR, Tags 등 추출
+                    // VPC ID 추출
                     String vpcId = String.valueOf(network.getId());  // Network 객체에서 ID는 long 타입일 수 있으므로 문자열로 변환
-                    String cidr = "Not Available"; // CIDR 범위 정보는 서브넷에서 가져와야 함
-                    List<String> tags = new ArrayList<>(); // 태그를 가져올 방법을 변경해야 함
 
-                    // 서브넷 정보 조회
-                    List<String> subnets = new ArrayList<>();
-                    List<String> cidrBlocks = new ArrayList<>();
+                    // VPC에 관련된 태그를 처리하기 위한 방법
+                    // VPC 태그 정보가 네트워크 객체에 포함되지 않으면 다른 방법을 사용해야 할 수 있음
+                    List<String> tags = new ArrayList<>();  // 태그 정보는 네트워크 리소스에서 별도로 처리할 수 있음.
 
                     // SubnetworksClient를 사용하여 서브넷 목록 조회
+                    List<String> subnets = new ArrayList<>();
                     try (SubnetworksClient subnetworksClient = SubnetworksClient.create(SubnetworksSettings.newBuilder()
                             .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
                             .build())) {
@@ -228,18 +228,11 @@ public class GcpResourceService {
 
                         for (Subnetwork subnetwork : subnetworkResponse.iterateAll()) {
                             subnets.add(subnetwork.getName());
-                            cidrBlocks.add(subnetwork.getIpCidrRange());
-                        }
-
-                        if (!cidrBlocks.isEmpty()) {
-                            cidr = String.join(", ", cidrBlocks);
                         }
                     }
 
                     // 라우팅 테이블 조회 (RoutesClient 사용)
                     List<String> routingTables = new ArrayList<>();
-
-                    // RoutesClient를 사용하여 라우팅 테이블 조회
                     try (RoutesClient routesClient = RoutesClient.create(RoutesSettings.newBuilder()
                             .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
                             .build())) {
@@ -255,7 +248,7 @@ public class GcpResourceService {
                     }
 
                     // VPC 정보 DTO 생성
-                    VpcTotalResponseDto vpcDto = new VpcTotalResponseDto(vpcId, cidr, tags, subnets, routingTables);
+                    VpcTotalResponseDto vpcDto = new VpcTotalResponseDto(vpcId, tags, subnets, routingTables);
                     vpcList.add(vpcDto);
                 }
 
@@ -269,9 +262,10 @@ public class GcpResourceService {
         }
     }
 
+
     //static ip 조회
     public List<StaticIpDto> getStaticIpsFromGCP(String projectId, String userId) {
-        String region = "us-central1";
+        String region = "asia-northeast3";
 
         try {
             GoogleCredentials credentials = getCredentials(userId);
