@@ -150,7 +150,7 @@ public class GcpResourceService {
         // SubnetworksClient 객체 생성 (인증 정보와 함께 생성)
         try (SubnetworksClient subnetworksClient = SubnetworksClient.create(subnetworksSettings)) {
 
-            String region = "us-central1";
+            String region = "asia-northeast3";
             // ListSubnetworksRequest 객체 생성
             ListSubnetworksRequest listRequest = ListSubnetworksRequest.newBuilder()
                     .setProject(projectId)  // GCP 프로젝트 ID
