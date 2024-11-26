@@ -184,8 +184,6 @@ public class GcpResourceService {
         }
     }
 
-    // VPC 정보와 서브넷 및 라우팅 테이블 조회
-    // VPC 정보와 서브넷 및 라우팅 테이블 조회
     public ResponseEntity<?> listVpcsWithDetails(String projectId, String userId) {
         List<VpcTotalResponseDto> vpcList = new ArrayList<>();
 
@@ -208,15 +206,15 @@ public class GcpResourceService {
 
                 // 페이징된 네트워크 목록을 순회
                 for (Network network : response.iterateAll()) {
-                    // VPC ID 추출
-                    String vpcId = String.valueOf(network.getId());  // Network 객체에서 ID는 long 타입일 수 있으므로 문자열로 변환
+                    // VPC 이름 추출
+                    String vpcName = network.getName();  // VPC의 이름을 가져옴
 
-                    // VPC에 관련된 태그를 처리하기 위한 방법
-                    // VPC 태그 정보가 네트워크 객체에 포함되지 않으면 다른 방법을 사용해야 할 수 있음
-                    List<String> tags = new ArrayList<>();  // 태그 정보는 네트워크 리소스에서 별도로 처리할 수 있음.
+                    // VPC ID (optional)
+                    String vpcId = String.valueOf(network.getId());  // ID는 long 타입일 수 있으므로 문자열로 변환
 
-                    // SubnetworksClient를 사용하여 서브넷 목록 조회
+                    // VPC와 연관된 서브넷 목록 조회
                     List<String> subnets = new ArrayList<>();
+                    List<String> cidrBlocks = new ArrayList<>();
                     try (SubnetworksClient subnetworksClient = SubnetworksClient.create(SubnetworksSettings.newBuilder()
                             .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
                             .build())) {
@@ -227,7 +225,11 @@ public class GcpResourceService {
                                 projectId, region);
 
                         for (Subnetwork subnetwork : subnetworkResponse.iterateAll()) {
-                            subnets.add(subnetwork.getName());
+                            // 서브넷의 VPC를 확인하여 해당 VPC에 속한 서브넷만 추가
+                            if (subnetwork.getNetwork().contains(network.getSelfLink())) {
+                                subnets.add(subnetwork.getName());
+                                cidrBlocks.add(subnetwork.getIpCidrRange());
+                            }
                         }
                     }
 
@@ -247,8 +249,8 @@ public class GcpResourceService {
                         }
                     }
 
-                    // VPC 정보 DTO 생성
-                    VpcTotalResponseDto vpcDto = new VpcTotalResponseDto(vpcId, tags, subnets, routingTables);
+                    // VPC 정보 DTO 생성 (이제 이름도 포함)
+                    VpcTotalResponseDto vpcDto = new VpcTotalResponseDto(vpcId, vpcName, subnets, routingTables);
                     vpcList.add(vpcDto);
                 }
 
@@ -261,6 +263,7 @@ public class GcpResourceService {
             return ResponseEntity.status(500).body(responseService.getFailResult("VPC creation failed: " + e.getMessage()));
         }
     }
+
 
 
     //static ip 조회

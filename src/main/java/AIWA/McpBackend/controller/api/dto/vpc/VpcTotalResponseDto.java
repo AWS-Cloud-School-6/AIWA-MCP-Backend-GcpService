@@ -11,14 +11,14 @@ import java.util.Map;
 @Getter
 public class VpcTotalResponseDto {
     private String vpcId;
-    private List<String> tags;
+    private String vpcName;
     private List<String> subnets;
     private List<String> routingTables;
 
     // Constructor, Getter, Setter
-    public VpcTotalResponseDto(String vpcId, List<String> tags, List<String> subnets, List<String> routingTables) {
+    public VpcTotalResponseDto(String vpcId, String vpcName, List<String> subnets, List<String> routingTables) {
         this.vpcId = vpcId;
-        this.tags = tags;
+        this.vpcName = vpcName;
         this.subnets = subnets;
         this.routingTables = routingTables;
     }
