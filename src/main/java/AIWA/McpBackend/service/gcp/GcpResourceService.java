@@ -222,7 +222,7 @@ public class GcpResourceService {
                             .build())) {
 
                         // 서브넷 목록 조회
-                        String region = "us-central1"; // 필요한 지역을 지정
+                        String region = "asia-northeast3"; // 필요한 지역을 지정
                         SubnetworksClient.ListPagedResponse subnetworkResponse = subnetworksClient.list(
                                 projectId, region);
 
