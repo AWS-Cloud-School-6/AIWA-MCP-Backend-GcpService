@@ -167,6 +167,9 @@ public class GcpResourceService {
                         String networkId = subnetwork.getNetwork();  // 네트워크 정보
                         String ipCidrRange = subnetwork.getIpCidrRange();  // CIDR 범위
 
+                        // 서브넷 이름을 가져옵니다.
+                        String subnetName = subnetwork.getName();  // 서브넷 이름
+
                         // 레이블(태그) 정보를 List<String>으로 변환 (기본적으로 "default" 값으로 설정)
                         List<String> tags = Collections.singletonList("default"); // "default" 태그를 리스트로 감쌈
 
@@ -175,7 +178,9 @@ public class GcpResourceService {
                                 ipCidrRange,
                                 networkId.split("/")[9],
                                 tags,  // 태그 정보를 List로 처리
-                                subnetwork.getRegion().split("/")[8]);
+                                subnetwork.getRegion().split("/")[8],
+                                subnetName // 서브넷 이름 추가
+                        );
                     })
                     .collect(Collectors.toList());
 
@@ -183,6 +188,7 @@ public class GcpResourceService {
             return responseService.getListResult(subnetDTOList);
         }
     }
+
 
     public ResponseEntity<?> listVpcsWithDetails(String projectId, String userId) {
         List<VpcTotalResponseDto> vpcList = new ArrayList<>();
